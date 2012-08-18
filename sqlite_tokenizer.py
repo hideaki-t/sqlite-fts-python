@@ -1,4 +1,7 @@
 # coding: utf-8
+"""
+a proof of concept implementation of SQLite FTS tokenizers in Python
+"""
 from __future__ import print_function, unicode_literals
 
 import sys
@@ -11,9 +14,11 @@ import igo
 class sqlite3_tokenizer_module(ctypes.Structure):
     pass
 
+
 class sqlite3_tokenizer(ctypes.Structure):
     _fields_ = [("pModule", POINTER(sqlite3_tokenizer_module)),
                 ("t", ctypes.py_object)]
+
 
 class sqlite3_tokenizer_cursor(ctypes.Structure):
     _fields_ = [("pTokenizer", POINTER(sqlite3_tokenizer)),
@@ -38,56 +43,65 @@ sqlite3_tokenizer_module._fields_ = [
     ("xOpen", xOpen), ("xClose", xClose), ("xNext", xNext)]
 
 
-tkn = ctypes.pointer(sqlite3_tokenizer())
-nodes = []
-cur = ctypes.pointer(sqlite3_tokenizer_cursor())
+def make_tokenizer_module():
+    tokenizers = {}
+    cursors = {}
 
-def xcreate(argc, argv, ppTokenizer):
-    tkn[0].t = igo.tagger.Tagger('/home/hideaki/works/dat/ipadic')
-    ppTokenizer[0] = tkn
-    return 0
+    def xcreate(argc, argv, ppTokenizer):
+        tkn = sqlite3_tokenizer()
+        if argc > 0:
+            tkn.t = igo.tagger.Tagger(argv[0].decode('utf-8'))
+        else:
+            tkn.t = igo.tagger.Tagger()
+        tokenizers[ctypes.addressof(tkn)] = tkn
+        ppTokenizer[0] = ctypes.pointer(tkn)
+        return 0
 
-def xdestroy(pTokenizer):
-    return 0
+    def xdestroy(pTokenizer):
+        del(tokenizers[ctypes.addressof(pTokenizer[0])])
+        return 0
 
-def xopen(pTokenizer, pInput, nInput, ppCursor):
-    nodes.extend(pTokenizer[0].t.parse(pInput.decode('utf-8')))
-    cur[0].pTokenizer = pTokenizer
-    cur[0].nodes = iter(nodes)
-    cur[0].pos = 0
-    cur[0].offset = 0
-    ppCursor[0] = cur
-    return 0
+    def xopen(pTokenizer, pInput, nInput, ppCursor):
+        cur = sqlite3_tokenizer_cursor()
+        cur.pTokenizer = pTokenizer
+        cur.nodes = iter(pTokenizer[0].t.parse(pInput.decode('utf-8')))
+        cur.pos = 0
+        cur.offset = 0
+        cursors[ctypes.addressof(cur)] = cur
+        ppCursor[0] = ctypes.pointer(cur)
+        return 0
 
-def xnext(pCursor, ppToken, pnBytes, piStartOffset, piEndOffset, piPosition):
-    try:
-        c = pCursor[0]
-        m = next(pCursor[0].nodes)
-        token = m.surface.encode('utf-8')
-        tokenlen = len(token)
-        ppToken[0] = token
-        pnBytes[0] = tokenlen
-        piStartOffset[0] = c.offset
-        c.offset += tokenlen
-        piEndOffset[0] = c.offset
-        piPosition[0] = c.pos
-        c.pos += 1
-    except StopIteration:
-        return 101
-    return 0
+    def xnext(pCursor, ppToken, pnBytes,
+              piStartOffset, piEndOffset, piPosition):
+        try:
+            cur = pCursor[0]
+            m = next(pCursor[0].nodes)
+            token = m.surface.encode('utf-8')
+            tokenlen = len(token)
+            ppToken[0] = token
+            pnBytes[0] = tokenlen
+            piStartOffset[0] = cur.offset
+            cur.offset += tokenlen
+            piEndOffset[0] = cur.offset
+            piPosition[0] = cur.pos
+            cur.pos += 1
+        except StopIteration:
+            return 101
+        return 0
 
-def xclose(pCursor):
-    nodes[:] = []
-    return 0
+    def xclose(pCursor):
+        del(cursors[ctypes.addressof(pCursor[0])])
+        return 0
 
-tokenizer_module = sqlite3_tokenizer_module(
-    0,
-    xCreate(xcreate),
-    xDestroy(xdestroy),
-    xOpen(xopen),
-    xClose(xclose),
-    xNext(xnext)
-    )
+    return sqlite3_tokenizer_module(
+        0,
+        xCreate(xcreate),
+        xDestroy(xdestroy),
+        xOpen(xopen),
+        xClose(xclose),
+        xNext(xnext))
+
+tokenizer_module = make_tokenizer_module()
 
 
 def register_tokenizer(c):
@@ -103,8 +117,9 @@ if __name__ == '__main__':
     import sqlite3
     c = sqlite3.connect(':memory:')
     register_tokenizer(c)
-    c.execute('CREATE VIRTUAL TABLE fts USING FTS4(tokenize=igo)')
+    c.execute("CREATE VIRTUAL TABLE fts USING FTS4(tokenize=igo '/home/hideaki/works/dat/ipadic')")
     c.execute('INSERT INTO fts VALUES(?)', ('これは日本語で書かれています',))
     c.execute('INSERT INTO fts VALUES(?)', (' これは　日本語の文章を 全文検索するテストです',))
     for i in c.execute("SELECT * FROM fts WHERE fts MATCH '日本語'").fetchall():
         print(i[0])
+    c.close()
