@@ -42,8 +42,10 @@ sqlite3_tokenizer_module._fields_ = [
     ("iVersion", ctypes.c_int), ("xCreate", xCreate), ("xDestroy", xDestroy),
     ("xOpen", xOpen), ("xClose", xClose), ("xNext", xNext)]
 
+tokenizer_modules = {}
 
-def make_tokenizer_module():
+
+def make_tokenizer_module(name):
     tokenizers = {}
     cursors = {}
 
@@ -93,33 +95,23 @@ def make_tokenizer_module():
         del(cursors[ctypes.addressof(pCursor[0])])
         return 0
 
-    return sqlite3_tokenizer_module(
+    tokenizer_module = sqlite3_tokenizer_module(
         0,
         xCreate(xcreate),
         xDestroy(xdestroy),
         xOpen(xopen),
         xClose(xclose),
         xNext(xnext))
+    tokenizer_modules[name] = tokenizer_module
+    return tokenizer_module
 
-tokenizer_module = make_tokenizer_module()
 
-
-def register_tokenizer(c):
+def register_tokenizer(c, name):
     if sys.version_info.major == 2:
         global buffer
     else:
         buffer = lambda x: x
+    tokenizer_module = tokenizer_modules[name]
     address_blob = buffer(struct.pack("P", ctypes.addressof(tokenizer_module)))
-    c.execute('SELECT fts3_tokenizer(?, ?)', ('igo', address_blob))
+    return c.execute('SELECT fts3_tokenizer(?, ?)', (name, address_blob))
 
-
-if __name__ == '__main__':
-    import sqlite3
-    c = sqlite3.connect(':memory:')
-    register_tokenizer(c)
-    c.execute("CREATE VIRTUAL TABLE fts USING FTS4(tokenize=igo '/home/hideaki/works/dat/ipadic')")
-    c.execute('INSERT INTO fts VALUES(?)', ('これは日本語で書かれています',))
-    c.execute('INSERT INTO fts VALUES(?)', (' これは　日本語の文章を 全文検索するテストです',))
-    for i in c.execute("SELECT * FROM fts WHERE fts MATCH '日本語'").fetchall():
-        print(i[0])
-    c.close()
