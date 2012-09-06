@@ -45,7 +45,7 @@ sqlite3_tokenizer_module._fields_ = [
 tokenizer_modules = {}
 
 
-def make_tokenizer_module(name):
+def make_tokenizer_module():
     tokenizers = {}
     cursors = {}
 
@@ -102,16 +102,16 @@ def make_tokenizer_module(name):
         xOpen(xopen),
         xClose(xclose),
         xNext(xnext))
-    tokenizer_modules[name] = tokenizer_module
     return tokenizer_module
 
 
-def register_tokenizer(c, name):
+def register_tokenizer(c, name, tokenizer_module):
     if sys.version_info.major == 2:
         global buffer
     else:
         buffer = lambda x: x
-    tokenizer_module = tokenizer_modules[name]
-    address_blob = buffer(struct.pack("P", ctypes.addressof(tokenizer_module)))
-    return c.execute('SELECT fts3_tokenizer(?, ?)', (name, address_blob))
-
+    module_addr = ctypes.addressof(tokenizer_module)
+    address_blob = buffer(struct.pack("P", module_addr))
+    r = c.execute('SELECT fts3_tokenizer(?, ?)', (name, address_blob))
+    tokenizer_modules[module_addr] = tokenizer_module
+    return r
