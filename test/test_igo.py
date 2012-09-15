@@ -9,7 +9,7 @@ import struct
 import pytest
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
-import sqlite_tokenizer as fts
+import sqlitefts.sqlite_tokenizer as fts
 
 
 def test_make_tokenizer():
