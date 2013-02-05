@@ -8,7 +8,6 @@ import sys
 import ctypes
 from ctypes import POINTER, CFUNCTYPE
 import struct
-import igo
 
 
 class sqlite3_tokenizer_module(ctypes.Structure):
@@ -16,15 +15,15 @@ class sqlite3_tokenizer_module(ctypes.Structure):
 
 
 class sqlite3_tokenizer(ctypes.Structure):
-    _fields_ = [("pModule", POINTER(sqlite3_tokenizer_module)),
-                ("t", ctypes.py_object)]
+    _fields_ = [(str("pModule"), POINTER(sqlite3_tokenizer_module)),
+                (str("t"), ctypes.py_object)]
 
 
 class sqlite3_tokenizer_cursor(ctypes.Structure):
-    _fields_ = [("pTokenizer", POINTER(sqlite3_tokenizer)),
-                ("nodes", ctypes.py_object),
-                ("offset", ctypes.c_int),
-                ("pos", ctypes.c_int)]
+    _fields_ = [(str("pTokenizer"), POINTER(sqlite3_tokenizer)),
+                (str("tokens"), ctypes.py_object),
+                (str("offset"), ctypes.c_int),
+                (str("pos"), ctypes.c_int)]
 
 xCreate = CFUNCTYPE(ctypes.c_int, ctypes.c_int, POINTER(ctypes.c_char_p),
                     POINTER(POINTER(sqlite3_tokenizer)))
@@ -39,22 +38,30 @@ xNext = CFUNCTYPE(ctypes.c_int, POINTER(sqlite3_tokenizer_cursor),
                   POINTER(ctypes.c_int))
 
 sqlite3_tokenizer_module._fields_ = [
-    ("iVersion", ctypes.c_int), ("xCreate", xCreate), ("xDestroy", xDestroy),
-    ("xOpen", xOpen), ("xClose", xClose), ("xNext", xNext)]
+    (str("iVersion"), ctypes.c_int), (str("xCreate"), xCreate),
+    (str("xDestroy"), xDestroy), (str("xOpen"), xOpen),
+    (str("xClose"), xClose), (str("xNext"), xNext)]
+
+
+class Tokenizer:
+    """ Tokenizer base class """
+    def tokenize(text):
+        """ Tokenizer given unicode text. Returns an iterator of token """
+        return text
+
 
 tokenizer_modules = {}
+"""hold references to prevent GC"""
 
 
-def make_tokenizer_module():
+def make_tokenizer_module(tokenizer):
+    """ make tokenizer module """
     tokenizers = {}
     cursors = {}
 
     def xcreate(argc, argv, ppTokenizer):
         tkn = sqlite3_tokenizer()
-        if argc > 0:
-            tkn.t = igo.tagger.Tagger(argv[0].decode('utf-8'))
-        else:
-            tkn.t = igo.tagger.Tagger()
+        tkn.t = tokenizer
         tokenizers[ctypes.addressof(tkn)] = tkn
         ppTokenizer[0] = ctypes.pointer(tkn)
         return 0
@@ -66,7 +73,7 @@ def make_tokenizer_module():
     def xopen(pTokenizer, pInput, nInput, ppCursor):
         cur = sqlite3_tokenizer_cursor()
         cur.pTokenizer = pTokenizer
-        cur.nodes = iter(pTokenizer[0].t.parse(pInput.decode('utf-8')))
+        cur.tokens = pTokenizer[0].t.tokenize(pInput.decode('utf-8'))
         cur.pos = 0
         cur.offset = 0
         cursors[ctypes.addressof(cur)] = cur
@@ -77,8 +84,7 @@ def make_tokenizer_module():
               piStartOffset, piEndOffset, piPosition):
         try:
             cur = pCursor[0]
-            m = next(pCursor[0].nodes)
-            token = m.surface.encode('utf-8')
+            token = next(cur.tokens).encode('utf-8')
             tokenlen = len(token)
             ppToken[0] = token
             pnBytes[0] = tokenlen
@@ -106,6 +112,7 @@ def make_tokenizer_module():
 
 
 def register_tokenizer(c, name, tokenizer_module):
+    """ register tokenizer module with SQLite connection. """
     if sys.version_info.major == 2:
         global buffer
     else:
