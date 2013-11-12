@@ -6,7 +6,6 @@ import sqlite3
 import ctypes
 import struct
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 import sqlitefts.sqlite_tokenizer as fts
 
 import pytest

@@ -1,0 +1,4 @@
+include setup.py
+include tox.ini
+graft tests
+
