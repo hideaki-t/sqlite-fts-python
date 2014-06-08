@@ -1,5 +1,7 @@
-*.py[co]
-*.sw[po]
-__pycache__
-*~
-
+.tox/
+build/
+dist/
+env/
+sqlitefts.egg-info/
+*.pyc
+*.py~

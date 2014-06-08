@@ -12,15 +12,21 @@ import sqlitefts.sqlite_tokenizer as fts
 import pytest
 ts = pytest.importorskip('tinysegmenter')
 
+
 class TinySegmenterTokenizer(fts.Tokenizer):
     def __init__(self, path=None):
         self.segmenter = ts.TinySegmenter()
 
     def tokenize(self, text):
-        return iter(self.segmenter.tokenize(text))
+        p = 0
+        for t in self.segmenter.tokenize(text):
+            np = text[p:].index(t)
+            yield t, np, len(t.encode('utf-8'))
+            p = np
 
 
 t = TinySegmenterTokenizer()
+
 
 def test_make_tokenizer():
     c = sqlite3.connect(':memory:')

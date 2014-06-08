@@ -1,7 +1,5 @@
 # coding: utf-8
 from __future__ import print_function, unicode_literals
-import sys
-import os
 import sqlite3
 import ctypes
 import struct
@@ -11,15 +9,18 @@ import sqlitefts.sqlite_tokenizer as fts
 import pytest
 igo = pytest.importorskip('igo')
 
+
 class IgoTokenizer(fts.Tokenizer):
     def __init__(self, path=None):
         self.tagger = igo.tagger.Tagger(path)
 
     def tokenize(self, text):
-        return iter([m.surface for m in self.tagger.parse(text)])
+        for m in self.tagger.parse(text):
+            yield m.surface, m.start, m.start + len(m.surface.encode('utf-8'))
 
 
 t = IgoTokenizer('./ipadic')
+
 
 def test_make_tokenizer():
     c = sqlite3.connect(':memory:')

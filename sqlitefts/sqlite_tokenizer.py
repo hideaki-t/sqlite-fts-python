@@ -9,6 +9,16 @@ import ctypes
 from ctypes import POINTER, CFUNCTYPE
 import struct
 
+try:
+    from enum import Enum
+except:
+    pass
+
+
+class SQLiteResultCodes(Enum):
+    SQLITE_OK = 0
+    SQLITE_DONE = 101
+
 
 class sqlite3_tokenizer_module(ctypes.Structure):
     pass
@@ -46,8 +56,8 @@ sqlite3_tokenizer_module._fields_ = [
 class Tokenizer:
     """ Tokenizer base class """
     def tokenize(text):
-        """ Tokenizer given unicode text. Returns an iterator of token """
-        return text
+        """ Tokenize given unicode text. Yields each tokenized token, start position(in bytes), end positon(in bytes)"""
+        yield text, 0, len(text.encode('utf-8'))
 
 
 tokenizer_modules = {}
@@ -64,11 +74,11 @@ def make_tokenizer_module(tokenizer):
         tkn.t = tokenizer
         tokenizers[ctypes.addressof(tkn)] = tkn
         ppTokenizer[0] = ctypes.pointer(tkn)
-        return 0
+        return SQLiteResultCodes.SQLITE_OK.value
 
     def xdestroy(pTokenizer):
         del(tokenizers[ctypes.addressof(pTokenizer[0])])
-        return 0
+        return SQLiteResultCodes.SQLITE_OK.value
 
     def xopen(pTokenizer, pInput, nInput, ppCursor):
         cur = sqlite3_tokenizer_cursor()
@@ -78,28 +88,33 @@ def make_tokenizer_module(tokenizer):
         cur.offset = 0
         cursors[ctypes.addressof(cur)] = cur
         ppCursor[0] = ctypes.pointer(cur)
-        return 0
+        return SQLiteResultCodes.SQLITE_OK.value
 
     def xnext(pCursor, ppToken, pnBytes,
               piStartOffset, piEndOffset, piPosition):
         try:
             cur = pCursor[0]
-            token = next(cur.tokens).encode('utf-8')
-            tokenlen = len(token)
-            ppToken[0] = token
-            pnBytes[0] = tokenlen
-            piStartOffset[0] = cur.offset
-            cur.offset += tokenlen
-            piEndOffset[0] = cur.offset
+
+            while True:
+                normalized, inputBegin, inputEnd = next(cur.tokens)
+                normalized = normalized.encode('utf-8')
+                if normalized:
+                    break
+
+            ppToken[0] = normalized
+            pnBytes[0] = len(normalized)
+            piStartOffset[0] = inputBegin
+            piEndOffset[0] = inputEnd
+            cur.offset = inputEnd
             piPosition[0] = cur.pos
             cur.pos += 1
         except StopIteration:
-            return 101
-        return 0
+            return SQLiteResultCodes.SQLITE_DONE.value
+        return SQLiteResultCodes.SQLITE_OK.value
 
     def xclose(pCursor):
         del(cursors[ctypes.addressof(pCursor[0])])
-        return 0
+        return SQLiteResultCodes.SQLITE_OK.value
 
     tokenizer_module = sqlite3_tokenizer_module(
         0,

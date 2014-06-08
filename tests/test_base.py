@@ -1,16 +1,21 @@
 # coding: utf-8
 from __future__ import print_function, unicode_literals
-import sys
-import os
 import sqlite3
 import ctypes
 import struct
+import re
 
 import sqlitefts.sqlite_tokenizer as fts
 
+
 class SimpleTokenizer(fts.Tokenizer):
+    _p = re.compile(r'\S+')
+
     def tokenize(self, text):
-        return iter(text.split(' '))
+        for m in self._p.finditer(text):
+            s, e = m.span()
+            yield text[s:e], s, e
+
 
 def test_make_tokenizer():
     c = sqlite3.connect(':memory:')
