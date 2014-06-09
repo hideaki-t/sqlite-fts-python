@@ -1,10 +1,9 @@
 from setuptools import setup
-import sys
 
 
 setup(
     name="sqlitefts",
-    version="0.1",
+    version="0.2",
     packages=["sqlitefts"],
     description='A Python binding of SQLite Full Text Search Tokenizer',
     url='https://github.com/hideaki-t/igo-python/',
@@ -24,5 +23,4 @@ setup(
     author_email='mymelo@gmail.com',
     license='MIT',
     keywords=['SQLite', 'Full-text search', 'FTS'],
-    install_requires=['enum34'] if sys.version_info < (3, 4) else []
 )

@@ -9,15 +9,8 @@ import ctypes
 from ctypes import POINTER, CFUNCTYPE
 import struct
 
-try:
-    from enum import Enum
-except:
-    pass
-
-
-class SQLiteResultCodes(Enum):
-    SQLITE_OK = 0
-    SQLITE_DONE = 101
+SQLITE_OK = 0
+SQLITE_DONE = 101
 
 
 class sqlite3_tokenizer_module(ctypes.Structure):
@@ -74,11 +67,11 @@ def make_tokenizer_module(tokenizer):
         tkn.t = tokenizer
         tokenizers[ctypes.addressof(tkn)] = tkn
         ppTokenizer[0] = ctypes.pointer(tkn)
-        return SQLiteResultCodes.SQLITE_OK.value
+        return SQLITE_OK
 
     def xdestroy(pTokenizer):
         del(tokenizers[ctypes.addressof(pTokenizer[0])])
-        return SQLiteResultCodes.SQLITE_OK.value
+        return SQLITE_OK
 
     def xopen(pTokenizer, pInput, nInput, ppCursor):
         cur = sqlite3_tokenizer_cursor()
@@ -88,7 +81,7 @@ def make_tokenizer_module(tokenizer):
         cur.offset = 0
         cursors[ctypes.addressof(cur)] = cur
         ppCursor[0] = ctypes.pointer(cur)
-        return SQLiteResultCodes.SQLITE_OK.value
+        return SQLITE_OK
 
     def xnext(pCursor, ppToken, pnBytes,
               piStartOffset, piEndOffset, piPosition):
@@ -109,12 +102,12 @@ def make_tokenizer_module(tokenizer):
             piPosition[0] = cur.pos
             cur.pos += 1
         except StopIteration:
-            return SQLiteResultCodes.SQLITE_DONE.value
-        return SQLiteResultCodes.SQLITE_OK.value
+            return SQLITE_DONE
+        return SQLITE_OK
 
     def xclose(pCursor):
         del(cursors[ctypes.addressof(pCursor[0])])
-        return SQLiteResultCodes.SQLITE_OK.value
+        return SQLITE_OK
 
     tokenizer_module = sqlite3_tokenizer_module(
         0,
