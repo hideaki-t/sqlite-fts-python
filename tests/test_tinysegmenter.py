@@ -1,13 +1,10 @@
 # coding: utf-8
 from __future__ import print_function, unicode_literals
-import sys
-import os
 import sqlite3
 import ctypes
 import struct
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
-import sqlitefts.sqlite_tokenizer as fts
+import sqlitefts as fts
 
 import pytest
 ts = pytest.importorskip('tinysegmenter')
@@ -31,7 +28,7 @@ t = TinySegmenterTokenizer()
 def test_make_tokenizer():
     c = sqlite3.connect(':memory:')
     tokenizer_module = fts.make_tokenizer_module(t)
-    assert fts.sqlite3_tokenizer_module == type(tokenizer_module)
+    assert fts.tokenizer.sqlite3_tokenizer_module == type(tokenizer_module)
     c.close()
 
 

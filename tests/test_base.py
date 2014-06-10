@@ -5,7 +5,7 @@ import ctypes
 import struct
 import re
 
-import sqlitefts.sqlite_tokenizer as fts
+import sqlitefts as fts
 
 
 class SimpleTokenizer(fts.Tokenizer):
@@ -20,7 +20,7 @@ class SimpleTokenizer(fts.Tokenizer):
 def test_make_tokenizer():
     c = sqlite3.connect(':memory:')
     tokenizer_module = fts.make_tokenizer_module(SimpleTokenizer())
-    assert fts.sqlite3_tokenizer_module == type(tokenizer_module)
+    assert fts.tokenizer.sqlite3_tokenizer_module == type(tokenizer_module)
     c.close()
 
 

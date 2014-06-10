@@ -5,7 +5,7 @@ import unittest
 import sqlite3
 import re
 
-import sqlitefts.sqlite_tokenizer as fts
+import sqlitefts as fts
 
 
 class BaseTokenizer(fts.Tokenizer):
