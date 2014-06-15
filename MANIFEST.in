@@ -1,4 +1,7 @@
 include setup.py
 include tox.ini
+include LICENSE
 graft tests
+
+global-exclude __pycache__/*
 
