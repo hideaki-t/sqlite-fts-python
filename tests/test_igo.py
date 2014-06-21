@@ -91,6 +91,7 @@ def test_match():
     assert len(r) == 0
     c.close()
 
+
 def test_tokenizer_output():
     name = 'igo'
     with sqlite3.connect(':memory:') as c:
