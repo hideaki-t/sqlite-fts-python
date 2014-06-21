@@ -189,8 +189,9 @@ furnished to do so, subject to the following conditions:'''),
 def test_tokenizer_output():
     name = 'simple'
     with sqlite3.connect(':memory:') as c:
+        fts.register_tokenizer(c, name, fts.make_tokenizer_module(SimpleTokenizer()))
         c.execute("CREATE VIRTUAL TABLE tok1 USING fts3tokenize({})".format(name))
-        expect = [("this", 0, 4, 0), ("is", 5, 7, 1),
+        expect = [("This", 0, 4, 0), ("is", 5, 7, 1),
                   ("a", 8, 9, 2), ("test", 10, 14, 3), ("sentence", 15, 23, 4)]
         for a, e in zip(c.execute("SELECT token, start, end, position "
                                   "FROM tok1 WHERE input='This is a test sentence.'"), expect):
