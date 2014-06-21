@@ -16,7 +16,8 @@ class IgoTokenizer(fts.Tokenizer):
 
     def tokenize(self, text):
         for m in self.tagger.parse(text):
-            yield m.surface, m.start, m.start + len(m.surface.encode('utf-8'))
+            start = len(text[:m.start].encode('utf-8'))
+            yield m.surface, start, start + len(m.surface.encode('utf-8'))
 
 
 t = IgoTokenizer('./ipadic')
@@ -89,3 +90,23 @@ def test_match():
     r = c.execute("SELECT * FROM fts WHERE fts MATCH 'コレは'").fetchall()
     assert len(r) == 0
     c.close()
+
+def test_tokenizer_output():
+    name = 'igo'
+    with sqlite3.connect(':memory:') as c:
+        fts.register_tokenizer(c, name, fts.make_tokenizer_module(t))
+        c.execute("CREATE VIRTUAL TABLE tok1 USING fts3tokenize({})".format(name))
+        expect = [("This", 0, 4, 0), ("is", 5, 7, 1),
+                  ("a", 8, 9, 2), ("test", 10, 14, 3), ("sentence", 15, 23, 4)]
+        for a, e in zip(c.execute("SELECT token, start, end, position "
+                                  "FROM tok1 WHERE input='This is a test sentence.'"), expect):
+            assert e == a
+
+        s = 'これ は テスト の 文 です'
+        expect = [(None, 0, 0, 0)]
+        for i, txt in enumerate(s.split()):
+            expect.append((txt, expect[-1][2], expect[-1][2] + len(txt.encode('utf-8')), i))
+        expect = expect[1:]
+        for a, e in zip(c.execute("SELECT token, start, end, position "
+                                  "FROM tok1 WHERE input=?", [s.replace(' ', '')]), expect):
+            assert e == a
