@@ -12,11 +12,11 @@ ts = pytest.importorskip('tinysegmenter')
 
 class TinySegmenterTokenizer(fts.Tokenizer):
     def __init__(self, path=None):
-        self.segmenter = ts.TinySegmenter()
+        pass
 
     def tokenize(self, text):
         p = 0
-        for t in self.segmenter.tokenize(text):
+        for t in ts.tokenize(text):
             lt = len(t)
             np = p + text[p:].index(t)
             start = len(text[:np].encode('utf-8')) + (lt - len(t.lstrip()))
@@ -88,7 +88,7 @@ def test_match():
     assert len(r) == 2
     r = c.execute("SELECT * FROM fts WHERE fts MATCH '日本語'").fetchall()
     assert len(r) == 2
-    r = c.execute("SELECT * FROM fts WHERE fts MATCH '書かれて'").fetchall()
+    r = c.execute("SELECT * FROM fts WHERE fts MATCH 'ます'").fetchall()
     assert len(r) == 1 and r[0][str('content')] == contents[0][0]
     r = c.execute("SELECT * FROM fts WHERE fts MATCH 'テスト'").fetchall()
     assert len(r) == 1 and r[0][str('content')] == contents[1][0]
