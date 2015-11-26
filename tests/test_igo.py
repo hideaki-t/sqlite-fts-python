@@ -3,6 +3,7 @@ from __future__ import print_function, unicode_literals
 import sqlite3
 import ctypes
 import struct
+import os
 
 import sqlitefts as fts
 
@@ -20,7 +21,7 @@ class IgoTokenizer(fts.Tokenizer):
             yield m.surface, start, start + len(m.surface.encode('utf-8'))
 
 
-t = IgoTokenizer('./ipadic')
+t = IgoTokenizer(os.getenv('IGO_DICT', './ipadic'))
 
 
 def test_make_tokenizer():
