@@ -9,93 +9,100 @@ import struct
 import math
 
 
-def parseMatchInfo(buf):
-    '''see http://sqlite.org/fts3.html#matchinfo'''
-    bufsize = len(buf)  # length in bytes
+def _parse_match_info(buf):
+    # See http://sqlite.org/fts3.html#matchinfo
+    bufsize = len(buf)  # Length in bytes.
     return [struct.unpack('@I', buf[i:i+4])[0] for i in range(0, bufsize, 4)]
 
 
-def simple(raw_match_info):
-    '''
-    handle match_info called w/default args 'pcx' - based on the example rank
-    function http://sqlite.org/fts3.html#appendix_a
-    '''
-    match_info = parseMatchInfo(raw_match_info)
+# Ranking implementation, which parse matchinfo.
+def rank(raw_match_info, *weights):
+    # Handle match_info called w/default args 'pcx' - based on the example rank
+    # function http://sqlite.org/fts3.html#appendix_a
+    match_info = _parse_match_info(raw_match_info)
     score = 0.0
+
     p, c = match_info[:2]
+    if not weights:
+        weights = [1] * c
+    else:
+        weights = [0] * c
+        for i, weight in enumerate(weights):
+            weights[i] = weight
+
     for phrase_num in range(p):
         phrase_info_idx = 2 + (phrase_num * c * 3)
         for col_num in range(c):
+            weight = weights[col_num]
+            if not weight:
+                continue
+
             col_idx = phrase_info_idx + (col_num * 3)
             x1, x2 = match_info[col_idx:col_idx + 2]
             if x1 > 0:
-                score += float(x1) / x2
-    return score
+                score += weight * (float(x1) / x2)
+
+    return -score
+
+simple = rank
 
 
-def bm25(raw_match_info, column_index, k1=1.2, b=0.75):
+# Okapi BM25 ranking implementation (FTS4 only).
+def bm25(raw_match_info, *args):
     """
-    FTS4-only ranking function.
-
     Usage:
-
-        # Format string *must* be pcxnal
+        # Format string *must* be pcnalx
         # Second parameter to bm25 specifies the index of the column, on
         # the table being queries.
-
-        bm25(matchinfo(document_tbl, 'pcxnal'), 1) AS rank
+        bm25(matchinfo(document_tbl, 'pcnalx'), 1) AS rank
     """
-    match_info = parseMatchInfo(raw_match_info)
+    match_info = _parse_match_info(raw_match_info)
+    K = 1.2
+    B = 0.75
     score = 0.0
-    # p, 1 --> num terms
-    # c, 1 --> num cols
-    # x, (3 * p * c) --> for each phrase/column,
-    #     term_freq for this column
-    #     term_freq for all columns
-    #     total documents containing this term
-    # n, 1 --> total rows in table
-    # a, c --> for each column, avg number of tokens in this column
-    # l, c --> for each column, length of value for this column (in this row)
-    # s, c --> ignore
-    p, c = match_info[:2]
-    n_idx = 2 + (3 * p * c)
-    a_idx = n_idx + 1
-    l_idx = a_idx + c
-    n = match_info[n_idx]
-    a = match_info[a_idx: a_idx + c]
-    l = match_info[l_idx: l_idx + c]
 
-    total_docs = n
-    avg_length = float(a[column_index])
-    doc_length = float(l[column_index])
-    if avg_length == 0:
-        D = 0
+    P_O, C_O, N_O, A_O = range(4)
+    term_count = match_info[P_O]
+    col_count = match_info[C_O]
+    total_docs = match_info[N_O]
+    L_O = A_O + col_count
+    X_O = L_O + col_count
+
+    if not args:
+        weights = [1] * col_count
     else:
-        D = 1 - b + (b * (doc_length / avg_length))
+        weights = [0] * col_count
+        for i, weight in enumerate(args):
+            weights[i] = args[i]
 
-    for phrase in range(p):
-        # p, c, p0c01, p0c02, p0c03, p0c11, p0c12, p0c13, p1c01, p1c02, p1c03..
-        # So if we're interested in column <i>, the counts will be at indexes
-        x_idx = 2 + (3 * column_index * (phrase + 1))
-        term_freq = float(match_info[x_idx])
-        term_matches = float(match_info[x_idx + 2])
+    for i in range(term_count):
+        for j in range(col_count):
+            weight = weights[j]
+            if weight == 0:
+                continue
 
-        # The `max` check here is based on a suggestion in the Wikipedia
-        # article. For terms that are common to a majority of documents, the
-        # idf function can return negative values. Applying the max() here
-        # weeds out those values.
-        idf = max(
-            math.log(
-                (total_docs - term_matches + 0.5) /
-                (term_matches + 0.5)),
-            0)
+            avg_length = float(match_info[A_O + j])
+            doc_length = float(match_info[L_O + j])
+            if avg_length == 0:
+                D = 0
+            else:
+                D = 1 - B + (B * (doc_length / avg_length))
 
-        denom = term_freq + (k1 * D)
-        if denom == 0:
-            rhs = 0
-        else:
-            rhs = (term_freq * (k1 + 1)) / denom
+            x = X_O + (3 * j * (i + 1))
+            term_frequency = float(match_info[x])
+            docs_with_term = float(match_info[x + 2])
 
-        score += (idf * rhs)
+            idf = max(
+                math.log(
+                    (total_docs - docs_with_term + 0.5) /
+                    (docs_with_term + 0.5)),
+                0)
+            denom = term_frequency + (K * D)
+            if denom == 0:
+                rhs = 0
+            else:
+                rhs = (term_frequency * (K + 1)) / denom
 
-    return score
+            score += (idf * rhs) * weight
+
+    return -score
