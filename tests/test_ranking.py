@@ -69,30 +69,20 @@ class TestCase(unittest.TestCase):
         self.assertEqual(2, len(actual))
         self.assertEqual(['Some thing φχικλψ thing', 'Make thing I'],
                          [x['content'] for x in actual])
-        self.assertEqual({
-            'content': 'Some thing φχικλψ thing',
-            'rank': -0.6666666666666666
-        }, actual[0])
-        self.assertEqual({
-            'content': 'Make thing I',
-            'rank': -0.3333333333333333
-        }, actual[1])
+        self.assertEqual({'content': 'Some thing φχικλψ thing',
+                          'rank': -0.6666666666666666}, actual[0])
+        self.assertEqual({'content': 'Make thing I',
+                          'rank': -0.3333333333333333}, actual[1])
 
     def testBm25(self):
-        sql = '''
-      SELECT content, bm25(matchinfo(fts4, 'pcnalx'), 1) AS rank
-      FROM fts4
-      WHERE fts4 MATCH :query
-      ORDER BY rank
-    '''
+        sql = ("SELECT content, bm25(matchinfo(fts4, 'pcnalx'), 1) AS rank "
+               "FROM fts4 "
+               "WHERE fts4 MATCH :query "
+               "ORDER BY rank")
         actual = [dict(x) for x in self.testee.execute(sql, {'query': 'thing'})]
 
         self.assertEqual(2, len(actual))
-        self.assertEqual({
-                             'content': 'Some thing φχικλψ thing',
-                             'rank': -0.9722786938230542
-                         }, actual[0])
-        self.assertEqual({
-                             'content': 'Make thing I',
-                             'rank': -0.8236501036844982
-                         }, actual[1])
+        self.assertEqual({'content': 'Some thing φχικλψ thing',
+                          'rank': -0.9722786938230542}, actual[0])
+        self.assertEqual({'content': 'Make thing I',
+                          'rank': -0.8236501036844982}, actual[1])
