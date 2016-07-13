@@ -30,28 +30,35 @@ class Tokenizer(fts.Tokenizer):
 
 
 class TestCase(unittest.TestCase):
-
     def setUp(self):
         name = 'test'
         conn = sqlite3.connect(':memory:')
         conn.row_factory = sqlite3.Row
 
-        fts.register_tokenizer(conn, name, fts.make_tokenizer_module(Tokenizer()))
+        fts.register_tokenizer(conn, name,
+                               fts.make_tokenizer_module(Tokenizer()))
 
-        conn.execute('CREATE VIRTUAL TABLE fts3 USING FTS3(tokenize={})'.format(name))
-        conn.execute('CREATE VIRTUAL TABLE fts4 USING FTS4(tokenize={})'.format(name))
+        conn.execute(
+            'CREATE VIRTUAL TABLE fts3 USING FTS3(tokenize={})'.format(name))
+        conn.execute(
+            'CREATE VIRTUAL TABLE fts4 USING FTS4(tokenize={})'.format(name))
 
         values = [
-            ('Make thing I',),
-            ('Some thing φχικλψ thing',),
+            ('Make thing I', ),
+            ('Some thing φχικλψ thing', ),
             ('Fusce volutpat hendrerit sem. Fusce sit amet vulputate dui. '
-             'Sed posuere mi a nisl aliquet tempor. Praesent tincidunt vel nunc ac pharetra.',),
-            ('Nam molestie euismod leo id aliquam. In hac habitasse platea dictumst.',),
-            ('Vivamus tincidunt feugiat tellus ac bibendum. In rhoncus dignissim suscipit.',),
-            ('Pellentesque hendrerit nulla rutrum luctus rutrum. Fusce hendrerit fermentum nunc at posuere.',),
-            ]
+             'Sed posuere mi a nisl aliquet tempor. Praesent tincidunt vel nunc ac pharetra.',
+             ),
+            ('Nam molestie euismod leo id aliquam. In hac habitasse platea dictumst.',
+             ),
+            ('Vivamus tincidunt feugiat tellus ac bibendum. In rhoncus dignissim suscipit.',
+             ),
+            ('Pellentesque hendrerit nulla rutrum luctus rutrum. Fusce hendrerit fermentum nunc at posuere.',
+             ),
+        ]
         for n in ('fts3', 'fts4'):
-            result = conn.executemany('INSERT INTO {0} VALUES(?)'.format(n), values)
+            result = conn.executemany('INSERT INTO {0} VALUES(?)'.format(n),
+                                      values)
             assert result.rowcount == len(values)
 
         conn.create_function('bm25', 2, ranking.bm25)
@@ -64,7 +71,8 @@ class TestCase(unittest.TestCase):
                "FROM fts3 "
                "WHERE fts3 MATCH :query "
                "ORDER BY rank")
-        actual = [dict(x) for x in self.testee.execute(sql, {'query': 'thing'})]
+        actual = [dict(x)
+                  for x in self.testee.execute(sql, {'query': 'thing'})]
 
         self.assertEqual(2, len(actual))
         self.assertEqual(['Some thing φχικλψ thing', 'Make thing I'],
@@ -79,7 +87,8 @@ class TestCase(unittest.TestCase):
                "FROM fts4 "
                "WHERE fts4 MATCH :query "
                "ORDER BY rank")
-        actual = [dict(x) for x in self.testee.execute(sql, {'query': 'thing'})]
+        actual = [dict(x)
+                  for x in self.testee.execute(sql, {'query': 'thing'})]
 
         self.assertEqual(2, len(actual))
         self.assertEqual({'content': 'Some thing φχικλψ thing',
