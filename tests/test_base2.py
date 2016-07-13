@@ -55,24 +55,28 @@ class OriginalDebugTokenizer(fts.Tokenizer):
 
 
 class TestCase(unittest.TestCase):
-
     def setUp(self):
         name = 'test'
         conn = sqlite3.connect(':memory:')
 
-        fts.register_tokenizer(conn, name, fts.make_tokenizer_module(DebugTokenizer()))
-        conn.execute('CREATE VIRTUAL TABLE fts USING FTS4(tokenize={})'.format(name))
+        fts.register_tokenizer(conn, name,
+                               fts.make_tokenizer_module(DebugTokenizer()))
+        conn.execute('CREATE VIRTUAL TABLE fts USING FTS4(tokenize={})'.format(
+            name))
 
         self.testee = conn
 
     def testZeroLengthToken(self):
-        result = self.testee.executemany('INSERT INTO fts VALUES(?)', [('Make things I',), (u'Some σ φχικλψ',)])
+        result = self.testee.executemany(
+            'INSERT INTO fts VALUES(?)',
+            [('Make things I', ), (u'Some σ φχικλψ', )])
         self.assertEqual(2, result.rowcount)
 
     def testInfiniteRecursion(self):
-        contents = [('abc def',), ('abc xyz',)]
+        contents = [('abc def', ), ('abc xyz', )]
         result = self.testee.executemany('INSERT INTO fts VALUES(?)', contents)
         self.assertEqual(2, result.rowcount)
 
-        result = self.testee.execute("SELECT * FROM fts WHERE fts MATCH 'abc'").fetchall()
+        result = self.testee.execute(
+            "SELECT * FROM fts WHERE fts MATCH 'abc'").fetchall()
         self.assertEqual(2, len(result))
