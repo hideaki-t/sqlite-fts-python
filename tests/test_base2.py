@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
 
-import unittest
 import sqlite3
 import re
+
+import pytest
 
 import sqlitefts as fts
 
@@ -54,29 +55,29 @@ class OriginalDebugTokenizer(fts.Tokenizer):
         return (w[0:-1] for w in text.split(' '))
 
 
-class TestCase(unittest.TestCase):
-    def setUp(self):
-        name = 'test'
-        conn = sqlite3.connect(':memory:')
+@pytest.fixture
+def db():
+    name = 'test'
+    conn = sqlite3.connect(':memory:')
 
-        fts.register_tokenizer(conn, name,
-                               fts.make_tokenizer_module(DebugTokenizer()))
-        conn.execute('CREATE VIRTUAL TABLE fts USING FTS4(tokenize={})'.format(
-            name))
+    fts.register_tokenizer(conn, name,
+                           fts.make_tokenizer_module(DebugTokenizer()))
+    conn.execute('CREATE VIRTUAL TABLE fts USING FTS4(tokenize={})'.format(
+        name))
 
-        self.testee = conn
+    return conn
 
-    def testZeroLengthToken(self):
-        result = self.testee.executemany(
-            'INSERT INTO fts VALUES(?)',
-            [('Make things I', ), (u'Some σ φχικλψ', )])
-        self.assertEqual(2, result.rowcount)
 
-    def testInfiniteRecursion(self):
-        contents = [('abc def', ), ('abc xyz', )]
-        result = self.testee.executemany('INSERT INTO fts VALUES(?)', contents)
-        self.assertEqual(2, result.rowcount)
+def testZeroLengthToken(db):
+    result = db.executemany('INSERT INTO fts VALUES(?)',
+                            [('Make things I', ), (u'Some σ φχικλψ', )])
+    assert 2 == result.rowcount
 
-        result = self.testee.execute(
-            "SELECT * FROM fts WHERE fts MATCH 'abc'").fetchall()
-        self.assertEqual(2, len(result))
+
+def testInfiniteRecursion(db):
+    contents = [('abc def', ), ('abc xyz', )]
+    result = db.executemany('INSERT INTO fts VALUES(?)', contents)
+    assert 2 == result.rowcount
+
+    result = db.execute("SELECT * FROM fts WHERE fts MATCH 'abc'").fetchall()
+    assert 2 == len(result)
