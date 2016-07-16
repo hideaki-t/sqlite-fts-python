@@ -16,7 +16,7 @@ With this modules, you can write tokenizers in Python without any extra modules 
 Requirements
 ============
 
- * FTS3/4 enabled SQLite
+ * FTS3/4 enabled SQLite (for Windows, you may need to download and replace sqlite3.dll)
 
 
 Licence
