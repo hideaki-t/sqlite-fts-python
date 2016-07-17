@@ -158,10 +158,9 @@ def make_tokenizer_module(tokenizer):
 
 def register_tokenizer(c, name, tokenizer_module):
     """ register tokenizer module with SQLite connection. """
-    if not enable_fts3_tokenizer(c):
-        raise Exception("cannot enable custom tokenizer")
     module_addr = ctypes.addressof(tokenizer_module)
     address_blob = buffer(struct.pack("P", module_addr))
+    enable_fts3_tokenizer(c)
     r = c.execute('SELECT fts3_tokenizer(?, ?)', (name, address_blob))
     tokenizer_modules[module_addr] = tokenizer_module
     return r
