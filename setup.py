@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name="sqlitefts",
-      version="0.3.0",
+      version="0.3.1",
       packages=["sqlitefts"],
       description='A Python binding for tokenizers of SQLite Full Text Search',
       long_description=open('README.rst').read(),
