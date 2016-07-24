@@ -12,6 +12,7 @@ so that it is easy to use and deploy. You don't need anything else to full-text 
 But... Predefined tokenizers are not enough for some languages including Japanese. Also it is not easy to write own tokenizers.
 With this modules, you can write tokenizers in Python without any extra modules and C compiler.
 
+It also has ranking functions based on `peewee`_. 
 
 Requirements
 ============
@@ -33,3 +34,5 @@ Thanks
 
 .. _SQLite Full-Text search(FTS3/4): http://www.sqlite.org/fts3.html
 .. _predefined tokenizers: http://www.sqlite.org/fts3.html#tokenizer
+.. _peewee: https://github.com/coleifer/peewee
+
