@@ -1,4 +1,5 @@
 |codeship build status|
+|appveyor build status|
 
 sqlitefts-python
 ================
@@ -38,3 +39,4 @@ Thanks
 .. _predefined tokenizers: http://www.sqlite.org/fts3.html#tokenizer
 .. _peewee: https://github.com/coleifer/peewee
 .. |codeship build status| image:: https://codeship.com/projects/fc2fe0d0-33d2-0134-50c3-7e300f67430e/status?branch=master
+.. |appveyor build status| image:: https://ci.appveyor.com/api/projects/status/github/hideaki-t/sqlite-fts-python?svg=true
