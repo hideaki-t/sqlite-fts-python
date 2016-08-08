@@ -84,7 +84,7 @@ def f():
         else:
             db = ffi.cast('PyObject *', id(c)).db
         rc = dll.sqlite3_db_config(db, SQLITE_DBCONFIG_ENABLE_FTS3_TOKENIZER,
-                                   ffi.cast('int', 1), ffi.cast('int', 0))
+                                   ffi.cast('int', 1), ffi.NULL)
         return rc == 0
 
     return enable_fts3_tokenizer
