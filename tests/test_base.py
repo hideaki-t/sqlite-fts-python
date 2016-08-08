@@ -25,9 +25,11 @@ class SimpleTokenizer(fts.Tokenizer):
 
 def test_make_tokenizer():
     c = sqlite3.connect(':memory:')
-    tokenizer_module = fts.make_tokenizer_module(SimpleTokenizer())
-    assert {'iVersion', 'xClose', 'xCreate', 'xDestroy', 'xLanguageid',
-            'xNext', 'xOpen'} <= set(dir(tokenizer_module))
+    tm = fts.make_tokenizer_module(SimpleTokenizer())
+    assert all(
+        getattr(tm, x) is not None
+        for x in ('iVersion', 'xClose', 'xCreate', 'xDestroy', 'xLanguageid',
+                  'xNext', 'xOpen'))
     c.close()
 
 
