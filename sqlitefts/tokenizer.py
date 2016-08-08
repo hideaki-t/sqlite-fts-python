@@ -65,7 +65,12 @@ struct sqlite3_tokenizer_cursor {
   size_t offset;
 };
 ''')
-dll = ffi.dlopen("sqlite3")
+
+if sys.platform == 'win32':
+    dll = ffi.dlopen("sqlite3")
+else:
+    from ctypes.util import find_library
+    dll = ffi.dlopen(find_library("sqlite3"))
 
 
 def f():
