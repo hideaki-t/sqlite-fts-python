@@ -3,19 +3,12 @@
 a proof of concept implementation of SQLite FTS tokenizers in Python
 """
 from __future__ import print_function, unicode_literals
-
 import sys
-import struct
 
 from cffi import FFI
 
 SQLITE_OK = 0
 SQLITE_DONE = 101
-
-if sys.version_info.major == 2:
-    global buffer
-else:
-    buffer = lambda x: x
 
 ffi = FFI()
 ffi.cdef('''
@@ -43,31 +36,11 @@ else:
     dll = ffi.dlopen(find_library("sqlite3"))
 
 
-def f():
-    SQLITE_DBCONFIG_ENABLE_FTS3_TOKENIZER = 1004
-
-    def enable_fts3_tokenizer(c):
-        db = getattr(c, '_db', None)
-        if db:
-            # pypy's SQLite3 connection has _db using cffi
-            db = ffi.cast('sqlite3*', db)
-        else:
-            db = ffi.cast('PyObject *', id(c)).db
-        rc = dll.sqlite3_db_config(db, SQLITE_DBCONFIG_ENABLE_FTS3_TOKENIZER,
-                                   ffi.cast('int', 1), ffi.NULL)
-        return rc == 0
-
-    return enable_fts3_tokenizer
-
-
-enable_fts3_tokenizer = f()
-del f
-
-
-def register_tokenizer(c, name, tokenizer_module):
-    """ register tokenizer module with SQLite connection. """
-    module_addr = int(ffi.cast('uintptr_t', tokenizer_module))
-    address_blob = buffer(struct.pack("P", module_addr))
-    enable_fts3_tokenizer(c)
-    r = c.execute('SELECT fts3_tokenizer(?, ?)', (name, address_blob))
-    return r
+def get_db_from_connection(c):
+    db = getattr(c, '_db', None)
+    if db:
+        # pypy's SQLite3 connection has _db using cffi
+        db = ffi.cast('sqlite3*', db)
+    else:
+        db = ffi.cast('PyObject *', id(c)).db
+    return db

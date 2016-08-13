@@ -3,8 +3,13 @@
 PoC SQLite FTS5 tokenizer in Python
 """
 from __future__ import print_function, unicode_literals
+import sys
+import struct
 
-from .tokenizer import ffi, SQLITE_OK, SQLITE_DONE
+from .tokenizer import (ffi, dll, get_db_from_connection, SQLITE_OK,
+                        SQLITE_DONE)
+
+SQLITE_DBCONFIG_ENABLE_FTS3_TOKENIZER = 1004
 
 ffi.cdef('''
 typedef struct sqlite3_tokenizer_module sqlite3_tokenizer_module;
@@ -127,3 +132,24 @@ def make_tokenizer_module(tokenizer):
     tokenizer_modules[tokenizer] = (tokenizer_module, xcreate, xdestroy, xopen,
                                     xclose, xnext)
     return tokenizer_module
+
+
+def enable_fts3_tokenizer(c):
+    db = get_db_from_connection(c)
+    rc = dll.sqlite3_db_config(db, SQLITE_DBCONFIG_ENABLE_FTS3_TOKENIZER,
+                               ffi.cast('int', 1), ffi.NULL)
+    return rc == 0
+
+
+def register_tokenizer(c, name, tokenizer_module):
+    """ register tokenizer module with SQLite connection. """
+    module_addr = int(ffi.cast('uintptr_t', tokenizer_module))
+    address_blob = struct.pack("P", module_addr)
+    if sys.version_info.major == 2:
+        address_blob = buffer(address_blob)
+    enable_fts3_tokenizer(c)
+    r = c.execute('SELECT fts3_tokenizer(?, ?)', (name, address_blob))
+    return r
+
+
+__all__ = ["Tokenizer", "make_tokenizer_module", "register_tokenizer"]
