@@ -5,9 +5,7 @@ import sys
 import sqlitefts as fts
 
 import pytest
-if sys.version_info >= (3, 3) and sys.version_info < (3, 4):
-    from jajp_common import (test_register_tokenizer, test_createtable)  # noqa
-else:
+if sys.version_info < (3, 3) or sys.version_info >= (3, 4):
     from jajp_common import *  # noqa
 igo = pytest.importorskip('igo')
 

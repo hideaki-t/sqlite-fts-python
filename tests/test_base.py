@@ -1,11 +1,14 @@
 # coding: utf-8
 from __future__ import print_function, unicode_literals
 import sqlite3
-import ctypes
 import struct
 import re
 
+from cffi import FFI
+
 import sqlitefts as fts
+
+ffi = FFI()
 
 
 class SimpleTokenizer(fts.Tokenizer):
@@ -22,8 +25,11 @@ class SimpleTokenizer(fts.Tokenizer):
 
 def test_make_tokenizer():
     c = sqlite3.connect(':memory:')
-    tokenizer_module = fts.make_tokenizer_module(SimpleTokenizer())
-    assert fts.tokenizer.sqlite3_tokenizer_module == type(tokenizer_module)
+    tm = fts.make_tokenizer_module(SimpleTokenizer())
+    assert all(
+        getattr(tm, x) is not None
+        for x in ('iVersion', 'xClose', 'xCreate', 'xDestroy', 'xLanguageid',
+                  'xNext', 'xOpen'))
     c.close()
 
 
@@ -33,7 +39,8 @@ def test_register_tokenizer():
     tokenizer_module = fts.make_tokenizer_module(SimpleTokenizer())
     fts.register_tokenizer(c, name, tokenizer_module)
     v = c.execute("SELECT FTS3_TOKENIZER(?)", (name, )).fetchone()[0]
-    assert ctypes.addressof(tokenizer_module) == struct.unpack("P", v)[0]
+    assert int(ffi.cast('intptr_t', tokenizer_module)) == \
+        struct.unpack("P", v)[0]
     c.close()
 
 
@@ -45,6 +52,7 @@ def test_createtable():
     fts.register_tokenizer(c, name,
                            fts.make_tokenizer_module(SimpleTokenizer()))
     c.execute(sql)
+
     r = c.execute(
         "SELECT * FROM sqlite_master WHERE type='table' AND name='fts'").fetchone(
         )

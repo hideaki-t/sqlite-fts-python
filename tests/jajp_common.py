@@ -7,22 +7,6 @@ import struct
 import sqlitefts as fts
 
 
-def test_make_tokenizer(t):
-    c = sqlite3.connect(':memory:')
-    tokenizer_module = fts.make_tokenizer_module(t)
-    assert fts.tokenizer.sqlite3_tokenizer_module == type(tokenizer_module)
-    c.close()
-
-
-def test_register_tokenizer(name, t):
-    c = sqlite3.connect(':memory:')
-    tokenizer_module = fts.make_tokenizer_module(t)
-    fts.register_tokenizer(c, name, tokenizer_module)
-    v = c.execute("SELECT FTS3_TOKENIZER(?)", (name, )).fetchone()[0]
-    assert ctypes.addressof(tokenizer_module) == struct.unpack("P", v)[0]
-    c.close()
-
-
 def test_createtable(name, t):
     c = sqlite3.connect(':memory:')
     c.row_factory = sqlite3.Row
