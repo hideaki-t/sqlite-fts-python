@@ -8,21 +8,21 @@ sqlitefts-python provides binding for tokenizer of `SQLite Full-Text search(FTS3
 It allows you to write tokenizers in Python.
 
 
-SQLite has Full-Text search feature FTS3/FTS4 along with some `predefined tokenizers`_.
+SQLite has Full-Text search feature FTS3/FTS4 and FTS5 along with some `predefined tokenizers`_.
 It is easy to use and has enough functionality. Python has a built-in SQLite module,
 so that it is easy to use and deploy. You don't need anything else to full-text search.
 
 But... the predefined tokenizers are not enough for some languages including Japanese. Also it is not easy to write own tokenizers.
 This module provides ability to write your own tokenizers using Python without C compiler by ctypes_ and CFFI_.
 
-It also has ranking functions based on `peewee`_. 
+It also has ranking functions based on `peewee`_.
 
 Requirements
 ============
 
  * Python 2.7, Python 3.3+, and PyPy2.7, PyPy3.2, PyPy3.3
  * CFFI_
- * FTS3/4 enabled SQLite (for Windows, you may need to download and replace sqlite3.dll)
+ * FTS3/4 and/or FTS5 enabled SQLite (for Windows, you may need to download and replace sqlite3.dll)
 
 
 Licence
