@@ -53,18 +53,17 @@ def test_register_tokenizer_with_destroy():
     name = 'simpe'
     c = sqlite3.connect(':memory:')
 
-    arg_on_destroy = None
+    arg_on_destroy = []
     context = "hello"
 
     def on_destroy(x):
-        nonlocal arg_on_destroy
-        arg_on_destroy = x
+        arg_on_destroy.append(x)
 
     tm = fts5.make_fts5_tokenizer(SimpleTokenizer())
     assert fts5.register_tokenizer(
         c, name, tm, context=context, on_destroy=on_destroy)
     c.close()
-    assert arg_on_destroy == context
+    assert arg_on_destroy == [context]
 
 
 def test_createtable():
