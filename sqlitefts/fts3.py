@@ -45,7 +45,9 @@ struct sqlite3_tokenizer_cursor {
 
 
 class Tokenizer(object):
-    """ Tokenizer base class """
+    """
+    Tokenizer base class.
+    """
 
     def tokenize(text):
         """
@@ -61,24 +63,27 @@ tokenizer_modules = {}
 
 def make_tokenizer_module(tokenizer):
     """ make tokenizer module """
-    if tokenizer in tokenizer_modules:
-        return tokenizer_modules[tokenizer]
-
-    t = ffi.new_handle(tokenizer)
     tokenizers = {}
     cursors = {}
 
     @ffi.callback('int(int, const char *const*, sqlite3_tokenizer **)')
     def xcreate(argc, argv, ppTokenizer):
+        if hasattr(tokenizer, '__call__'):
+            args = [ffi.string(x).decode('utf-8') for x in argv[0:argc]]
+            tk = tokenizer(args)
+        else:
+            tk = tokenizer
+        th = ffi.new_handle(tk)
         tkn = ffi.new('sqlite3_tokenizer *')
-        tkn.t = t
-        tokenizers[int(ffi.cast('intptr_t', tkn))] = tkn
+        tkn.t = th
+        tokenizers[tkn] = th
         ppTokenizer[0] = tkn
         return SQLITE_OK
 
     @ffi.callback('int(sqlite3_tokenizer *)')
     def xdestroy(pTokenizer):
-        del tokenizers[int(ffi.cast('intptr_t', pTokenizer))]
+        tkn = pTokenizer
+        del tokenizers[tkn]
         return SQLITE_OK
 
     @ffi.callback(
@@ -93,7 +98,7 @@ def make_tokenizer_module(tokenizer):
         cur.tokens = tknh
         cur.pos = 0
         cur.offset = 0
-        cursors[int(ffi.cast('intptr_t', cur))] = cur, tknh
+        cursors[cur] = tknh
         ppCursor[0] = cur
         return SQLITE_OK
 
@@ -111,7 +116,7 @@ def make_tokenizer_module(tokenizer):
                 if normalized:
                     break
 
-            ppToken[0] = ffi.new('char []', normalized)  # ??
+            ppToken[0] = ffi.new('char []', normalized)
             pnBytes[0] = len(normalized)
             piStartOffset[0] = inputBegin
             piEndOffset[0] = inputEnd
@@ -124,7 +129,12 @@ def make_tokenizer_module(tokenizer):
 
     @ffi.callback('int(sqlite3_tokenizer_cursor *)')
     def xclose(pCursor):
-        del cursors[int(ffi.cast('intptr_t', pCursor))]
+        tk = ffi.from_handle(pCursor.pTokenizer.t)
+        on_close = getattr(tk, 'on_close', None)
+        if on_close and hasattr(on_close, '__call__'):
+            on_close()
+
+        del cursors[pCursor]
         return SQLITE_OK
 
     tokenizer_module = ffi.new("sqlite3_tokenizer_module *",

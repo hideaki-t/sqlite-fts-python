@@ -5,6 +5,7 @@ import struct
 import re
 
 from cffi import FFI
+import pytest
 
 import sqlitefts as fts
 
@@ -23,8 +24,19 @@ class SimpleTokenizer(fts.Tokenizer):
             yield t, p, p + l
 
 
-def test_make_tokenizer():
+@pytest.fixture
+def c():
     c = sqlite3.connect(':memory:')
+    c.row_factory = sqlite3.Row
+    return c
+
+
+@pytest.fixture
+def tokenizer_module():
+    return fts.make_tokenizer_module(SimpleTokenizer())
+
+
+def test_make_tokenizer(c):
     tm = fts.make_tokenizer_module(SimpleTokenizer())
     assert all(
         getattr(tm, x) is not None
@@ -33,10 +45,8 @@ def test_make_tokenizer():
     c.close()
 
 
-def test_register_tokenizer():
+def test_register_tokenizer(c, tokenizer_module):
     name = 'simpe'
-    c = sqlite3.connect(':memory:')
-    tokenizer_module = fts.make_tokenizer_module(SimpleTokenizer())
     fts.register_tokenizer(c, name, tokenizer_module)
     v = c.execute("SELECT FTS3_TOKENIZER(?)", (name, )).fetchone()[0]
     assert int(ffi.cast('intptr_t', tokenizer_module)) == \
@@ -44,13 +54,10 @@ def test_register_tokenizer():
     c.close()
 
 
-def test_createtable():
-    c = sqlite3.connect(':memory:')
-    c.row_factory = sqlite3.Row
+def test_createtable(c, tokenizer_module):
     name = 'simple'
     sql = "CREATE VIRTUAL TABLE fts USING FTS4(tokenize={})".format(name)
-    fts.register_tokenizer(c, name,
-                           fts.make_tokenizer_module(SimpleTokenizer()))
+    fts.register_tokenizer(c, name, tokenizer_module)
     c.execute(sql)
 
     r = c.execute(
@@ -63,13 +70,10 @@ def test_createtable():
     c.close()
 
 
-def test_insert():
-    c = sqlite3.connect(':memory:')
-    c.row_factory = sqlite3.Row
+def test_insert(c, tokenizer_module):
     name = 'simple'
     content = 'これは日本語で書かれています'
-    fts.register_tokenizer(c, name,
-                           fts.make_tokenizer_module(SimpleTokenizer()))
+    fts.register_tokenizer(c, name, tokenizer_module)
     c.execute("CREATE VIRTUAL TABLE fts USING FTS4(tokenize={})".format(name))
     r = c.execute('INSERT INTO fts VALUES(?)', (content, ))
     assert r.rowcount == 1
@@ -79,14 +83,11 @@ def test_insert():
     c.close()
 
 
-def test_match():
-    c = sqlite3.connect(':memory:')
-    c.row_factory = sqlite3.Row
+def test_match(c, tokenizer_module):
     name = 'simple'
     contents = [('abc def', ), ('abc xyz', ), ('あいうえお かきくけこ', ),
                 ('あいうえお らりるれろ', )]
-    fts.register_tokenizer(c, name,
-                           fts.make_tokenizer_module(SimpleTokenizer()))
+    fts.register_tokenizer(c, name, tokenizer_module)
     c.execute("CREATE VIRTUAL TABLE fts USING FTS4(tokenize={})".format(name))
     r = c.executemany('INSERT INTO fts VALUES(?)', contents)
     assert r.rowcount == 4
@@ -111,7 +112,7 @@ def test_match():
     c.close()
 
 
-def test_full_text_index_queries():
+def test_full_text_index_queries(c, tokenizer_module):
     name = 'simple'
     docs = [(
         'README',
@@ -124,10 +125,8 @@ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:'''),
             ('日本語', 'あいうえお かきくけこ さしすせそ たちつてと なにぬねの')]
-    with sqlite3.connect(':memory:') as c:
-        c.row_factory = sqlite3.Row
-        fts.register_tokenizer(c, name,
-                               fts.make_tokenizer_module(SimpleTokenizer()))
+    with c:
+        fts.register_tokenizer(c, name, tokenizer_module)
         c.execute(
             "CREATE VIRTUAL TABLE docs USING FTS4(title, body, tokenize={})".format(
                 name))
@@ -245,11 +244,10 @@ furnished to do so, subject to the following conditions:'''),
         assert len(r) == 1
 
 
-def test_tokenizer_output():
+def test_tokenizer_output(c, tokenizer_module):
     name = 'simple'
     with sqlite3.connect(':memory:') as c:
-        fts.register_tokenizer(c, name,
-                               fts.make_tokenizer_module(SimpleTokenizer()))
+        fts.register_tokenizer(c, name, tokenizer_module)
         c.execute("CREATE VIRTUAL TABLE tok1 USING fts3tokenize({})".format(
             name))
         expect = [("This", 0, 4, 0), ("is", 5, 7, 1), ("a", 8, 9, 2),
