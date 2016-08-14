@@ -3,10 +3,11 @@ from __future__ import print_function, unicode_literals
 import sqlite3
 import re
 
-from cffi import FFI
-
 from sqlitefts import fts5
 from sqlitefts import Tokenizer
+
+import pytest
+from cffi import FFI
 
 ffi = FFI()
 
@@ -23,16 +24,26 @@ class SimpleTokenizer(Tokenizer):
             yield t, p, p + l
 
 
-def test_fts5_api_from_db():
+@pytest.fixture
+def c():
     c = sqlite3.connect(':memory:')
+    c.row_factory = sqlite3.Row
+    return c
+
+
+@pytest.fixture
+def tm():
+    return fts5.make_fts5_tokenizer(SimpleTokenizer())
+
+
+def test_fts5_api_from_db(c):
     fts5api = fts5.fts5_api_from_db(c)
     assert fts5api.iVersion == 2
     assert fts5api.xCreateTokenizer
     c.close()
 
 
-def test_make_tokenizer():
-    c = sqlite3.connect(':memory:')
+def test_make_tokenizer(c):
     tm = fts5.make_fts5_tokenizer(SimpleTokenizer())
     assert all(
         getattr(tm, x) is not None
@@ -40,38 +51,38 @@ def test_make_tokenizer():
     c.close()
 
 
-def test_register_tokenizer():
-    name = 'simpe'
-    c = sqlite3.connect(':memory:')
-    tm = fts5.make_fts5_tokenizer(SimpleTokenizer())
+def test_make_tokenizer_by_class(c):
+    tm = fts5.make_fts5_tokenizer(SimpleTokenizer)
+    assert all(
+        getattr(tm, x) is not None
+        for x in ('xCreate', 'xDelete', 'xTokenize'))
+    c.close()
+
+
+def test_register_tokenizer(c, tm):
+    name = 'super_simple'
     assert fts5.register_tokenizer(c, name, tm)
     c.close()
 
 
-def test_register_tokenizer_with_destroy():
-    name = 'simpe'
-    c = sqlite3.connect(':memory:')
-
+def test_register_tokenizer_with_destroy(c, tm):
+    name = 'super_simple'
     arg_on_destroy = []
     context = "hello"
 
     def on_destroy(x):
         arg_on_destroy.append(x)
 
-    tm = fts5.make_fts5_tokenizer(SimpleTokenizer())
     assert fts5.register_tokenizer(
         c, name, tm, context=context, on_destroy=on_destroy)
     c.close()
     assert arg_on_destroy == [context]
 
 
-def test_createtable():
-    c = sqlite3.connect(':memory:')
-    c.row_factory = sqlite3.Row
+def test_createtable(c, tm):
     name = 'super_simple'
     sql = "CREATE VIRTUAL TABLE fts USING fts5(w, tokenize={})".format(name)
-    fts5.register_tokenizer(c, name,
-                            fts5.make_fts5_tokenizer(SimpleTokenizer()))
+    fts5.register_tokenizer(c, name, tm)
     c.execute(sql)
 
     r = c.execute(
@@ -84,13 +95,36 @@ def test_createtable():
     c.close()
 
 
-def test_insert():
-    c = sqlite3.connect(':memory:')
-    c.row_factory = sqlite3.Row
+def test_createtale_using_tokenizer_class(c):
+    from collections import Counter
+    initialized = {}
+    deleted = Counter()
+
+    class ST(SimpleTokenizer):
+        def __init__(self, context=None, args=None):
+            initialized[self] = (context, args)
+
+        def on_delete(self):
+            deleted[self] += 1
+
+    name = 'super_simple'
+    fts5.register_tokenizer(
+        c, name, fts5.make_fts5_tokenizer(ST), context='test')
+    sql = (
+        "CREATE VIRTUAL TABLE fts "
+        "USING FTS5(content, tokenize='{} {} {}')").format(name, 'arg', '引数')
+    c.execute(sql)
+    assert len(initialized) == 1
+    assert [x for x in initialized.values()] == [('test', ['arg', '引数'])]
+    assert len(deleted) == 0
+    c.close()
+    assert [x for x in deleted.values()] == [1]
+
+
+def test_insert(c, tm):
     name = 'super_simple'
     content = 'これは日本語で書かれています'
-    fts5.register_tokenizer(c, name,
-                            fts5.make_fts5_tokenizer(SimpleTokenizer()))
+    fts5.register_tokenizer(c, name, tm)
     c.execute(
         "CREATE VIRTUAL TABLE fts USING FTS5(content, tokenize={})".format(
             name))
@@ -102,14 +136,11 @@ def test_insert():
     c.close()
 
 
-def test_match():
-    c = sqlite3.connect(':memory:')
-    c.row_factory = sqlite3.Row
+def test_match(c, tm):
     name = 'super_simple'
     contents = [('abc def', ), ('abc xyz', ), ('あいうえお かきくけこ', ),
                 ('あいうえお らりるれろ', )]
-    fts5.register_tokenizer(c, name,
-                            fts5.make_fts5_tokenizer(SimpleTokenizer()))
+    fts5.register_tokenizer(c, name, tm)
     c.execute(
         "CREATE VIRTUAL TABLE fts USING FTS5(content, tokenize={})".format(
             name))
@@ -136,7 +167,7 @@ def test_match():
     c.close()
 
 
-def test_full_text_index_queries():
+def test_full_text_index_queries(c, tm):
     name = 'super_simple'
     docs = [(
         'README',
@@ -149,10 +180,8 @@ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:'''),
             ('日本語', 'あいうえお かきくけこ さしすせそ たちつてと なにぬねの')]
-    with sqlite3.connect(':memory:') as c:
-        c.row_factory = sqlite3.Row
-        fts5.register_tokenizer(c, name,
-                                fts5.make_fts5_tokenizer(SimpleTokenizer()))
+    with c:
+        fts5.register_tokenizer(c, name, tm)
         c.execute(
             "CREATE VIRTUAL TABLE docs USING FTS5(title, body, tokenize={})".format(
                 name))

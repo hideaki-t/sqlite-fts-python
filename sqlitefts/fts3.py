@@ -44,7 +44,7 @@ struct sqlite3_tokenizer_cursor {
 ''')
 
 
-class Tokenizer:
+class Tokenizer(object):
     """ Tokenizer base class """
 
     def tokenize(text):

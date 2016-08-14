@@ -70,22 +70,36 @@ def register_tokenizer(c, name, tokenizer, context=None, on_destroy=None):
 
 
 def make_fts5_tokenizer(tokenizer):
-    """ make tokenizer module """
-    t = ffi.new_handle(tokenizer)
-    tokenizers = {}
+    """
+    make a FTS5 tokenizer using given tokenizer.
+    tokenizer can be an instance of Tokenizer or a Tokenizer class or
+    a method to get an instance of tokenizer.
+    if a class is given, an instance of the class will be created as needed.
+    """
+    tokenizers = set()
 
     @ffi.callback('int(void*, const char **, int, Fts5Tokenizer **)')
     def xcreate(ctx, argv, argc, ppOut):
-        # is keeping ctor instead of keeping tokenizer instance good idea?
-        # i.e. t = ctor(context, argv)
-        tkn = ffi.cast('Fts5Tokenizer *', t)
-        tokenizers[int(ffi.cast('intptr_t', tkn))] = tkn
+        if hasattr(tokenizer, '__call__'):
+            args = [ffi.string(x).decode('utf-8') for x in argv[0:argc]]
+            tk = tokenizer(ffi.from_handle(ctx), args)
+        else:
+            tk = tokenizer
+        th = ffi.new_handle(tk)
+        tkn = ffi.cast('Fts5Tokenizer *', th)
+        tokenizers.add(th)
         ppOut[0] = tkn
         return SQLITE_OK
 
     @ffi.callback('void(Fts5Tokenizer *)')
     def xdelete(pTokenizer):
-        del tokenizers[int(ffi.cast('intptr_t', pTokenizer))]
+        th = ffi.cast('void *', pTokenizer)
+        tk = ffi.from_handle(th)
+        on_delete = getattr(tk, 'on_delete', None)
+        if on_delete and hasattr(on_delete, '__call__'):
+            on_delete()
+
+        tokenizers.remove(th)
         return None
 
     @ffi.callback('int(Fts5Tokenizer *, void *, int, const char *, int, '
