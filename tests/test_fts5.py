@@ -117,8 +117,14 @@ def test_createtale_using_tokenizer_class(c):
     assert len(initialized) == 1
     assert [x for x in initialized.values()] == [('test', ['arg', '引数'])]
     assert len(deleted) == 0
+    sql = (
+        "CREATE VIRTUAL TABLE fts_2 "
+        "USING FTS5(content, tokenize='{} {} {}')").format(name, 'arg2', '引数2')
+    c.execute(sql)
     c.close()
-    assert [x for x in deleted.values()] == [1]
+    assert [x for x in initialized.values()] == [('test', ['arg', '引数']),
+                                                 ('test', ['arg2', '引数2'])]
+    assert [x for x in deleted.values()] == [1, 1]
 
 
 def test_insert(c, tm):
