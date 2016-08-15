@@ -102,7 +102,7 @@ def test_createtale_using_tokenizer_class(c):
 
     class ST(SimpleTokenizer):
         def __init__(self, context=None, args=None):
-            initialized[self] = (context, args)
+            initialized[self] = (context, tuple(args))
 
         def on_delete(self):
             deleted[self] += 1
@@ -115,16 +115,16 @@ def test_createtale_using_tokenizer_class(c):
         "USING FTS5(content, tokenize='{} {} {}')").format(name, 'arg', '引数')
     c.execute(sql)
     assert len(initialized) == 1
-    assert [x for x in initialized.values()] == [('test', ['arg', '引数'])]
+    assert list(initialized.values()) == [('test', ('arg', '引数'))]
     assert len(deleted) == 0
     sql = (
         "CREATE VIRTUAL TABLE fts_2 "
         "USING FTS5(content, tokenize='{} {} {}')").format(name, 'arg2', '引数2')
     c.execute(sql)
     c.close()
-    assert [x for x in initialized.values()] == [('test', ['arg', '引数']),
-                                                 ('test', ['arg2', '引数2'])]
-    assert [x for x in deleted.values()] == [1, 1]
+    assert set(initialized.values()) == {('test', ('arg', '引数')),
+                                         ('test', ('arg2', '引数2'))}
+    assert list(x for x in deleted.values()) == [1, 1]
 
 
 def test_insert(c, tm):
