@@ -36,6 +36,36 @@ struct fts5_tokenizer {
 };
 ''')
 
+
+class FTS5Tokenizer(object):
+    """
+    Tokenizer base class for FTS5.
+    """
+
+    def tokenize(text, flags=None):
+        """
+        Tokenize given unicode text. Yields each tokenized token,
+        start position(in bytes), end positon(in bytes).
+
+        flags will be set if a FTS5 tokenizer is used for FTS5 table.
+        a FTS5 tokenizer can be used for FTS3/4 table as well, but
+        flags will not be set.
+        """
+        yield text, 0, len(text.encode('utf-8'))
+
+
+class FTS3TokenizerAdaptor(FTS5Tokenizer):
+    """
+    wrap a FTS3 tokenizer instance to adapt it to FTS5 Tokenizer interface
+    """
+
+    def __init__(self, fts3tokenizer):
+        self.fts3tokenizer = fts3tokenizer
+
+    def tokenize(self, text, flags=None):
+        return self.fts3tokenizer.tokenize(text)
+
+
 fts5_tokenizers = {}
 """hold references to prevent GC"""
 
@@ -52,7 +82,9 @@ def fts5_api_from_db(c):
 
 
 def register_tokenizer(c, name, tokenizer, context=None, on_destroy=None):
-    """ need to keep reference of context and on_destroy """
+    """
+    register a tokenizer to SQLite connection
+    """
     fts5api = fts5_api_from_db(c)
     pContext = ffi.new_handle(context)
     if on_destroy is None:
@@ -107,14 +139,14 @@ def make_fts5_tokenizer(tokenizer):
     def xtokenize(pTokenizer, pCtx, flags, pText, nText, xToken):
         tokenizer = ffi.from_handle(ffi.cast('void *', pTokenizer))
         text = ffi.string(pText[0:nText]).decode('utf-8')
-        for normalized, inputBegin, inputEnd in tokenizer.tokenize(text):
+        for normalized, begin, end in tokenizer.tokenize(text, flags):
             normalized = normalized.encode('utf-8')
             if not normalized:
                 continue
 
             # TODO: Synonym Support
             r = xToken(pCtx, 0, ffi.new('char[]', normalized), len(normalized),
-                       inputBegin, inputEnd)
+                       begin, end)
             if r != SQLITE_OK:
                 return r
         return SQLITE_OK
@@ -124,4 +156,7 @@ def make_fts5_tokenizer(tokenizer):
     return fts5_tokenizer
 
 
-__all__ = ["register_tokenizer", "make_fts5_tokenizer"]
+__all__ = ["register_tokenizer", "make_fts5_tokenizer", 'FTS5Tokenizer',
+           "FTS5_TOKENIZE_QUERY", "FTS5_TOKENIZE_PREFIX",
+           "FTS5_TOKENIZE_DOCUMENT", "FTS5_TOKENIZE_AUX",
+           "FTS5_TOKEN_COLOCATED"]

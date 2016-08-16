@@ -2,9 +2,9 @@
 from __future__ import print_function, unicode_literals
 import sqlite3
 import re
+from collections import Counter
 
 from sqlitefts import fts5
-from sqlitefts import Tokenizer
 
 import pytest
 from cffi import FFI
@@ -12,10 +12,10 @@ from cffi import FFI
 ffi = FFI()
 
 
-class SimpleTokenizer(Tokenizer):
+class SimpleTokenizer(fts5.FTS5Tokenizer):
     _p = re.compile(r'\w+', re.UNICODE)
 
-    def tokenize(self, text):
+    def tokenize(self, text, flags):
         for m in self._p.finditer(text):
             s, e = m.span()
             t = text[s:e]
@@ -96,7 +96,6 @@ def test_createtable(c, tm):
 
 
 def test_createtale_using_tokenizer_class(c):
-    from collections import Counter
     initialized = {}
     deleted = Counter()
 
@@ -291,3 +290,26 @@ furnished to do so, subject to the following conditions:'''),
             "SELECT * FROM docs WHERE docs MATCH 'NEAR(あいうえお たちつてと, 3)'").fetchall(
             )
         assert len(r) == 1
+
+
+def test_flags(c):
+    flags_counter = Counter()
+
+    class ST(SimpleTokenizer):
+        def tokenize(self, text, flags):
+            flags_counter[flags] += 1
+            return super().tokenize(text, flags)
+
+    name = 'super_simple2'
+    fts5.register_tokenizer(c, name, fts5.make_fts5_tokenizer(ST()))
+    sql = ("CREATE VIRTUAL TABLE fts "
+           "USING FTS5(content, tokenize='{}')").format(name)
+    c.execute(sql)
+    c.executemany('INSERT INTO fts VALUES(?)',
+                  [('abc def', ), ('abc xyz', ), ('あいうえお かきくけこ', ),
+                   ('あいうえお らりるれろ', )])
+    c.execute("SELECT * FROM fts WHERE fts MATCH 'abc'").fetchall()
+    c.execute("SELECT * FROM fts WHERE fts MATCH 'abc'").fetchall()
+    c.close()
+    assert flags_counter[fts5.FTS5_TOKENIZE_DOCUMENT] == 4
+    assert flags_counter[fts5.FTS5_TOKENIZE_QUERY] == 2
