@@ -298,7 +298,7 @@ def test_flags(c):
     class ST(SimpleTokenizer):
         def tokenize(self, text, flags):
             flags_counter[flags] += 1
-            return super().tokenize(text, flags)
+            return super(ST, self).tokenize(text, flags)
 
     name = 'super_simple2'
     fts5.register_tokenizer(c, name, fts5.make_fts5_tokenizer(ST()))
