@@ -14,15 +14,37 @@ FTS5_TOKENIZE_AUX = 0x0008
 FTS5_TOKEN_COLOCATED = 0x0001
 
 ffi.cdef('''
+typedef struct sqlite3_context sqlite3_context;
+typedef struct Mem sqlite3_value;
+typedef uint64_t sqlite3_int64;
+
+void sqlite3_result_text(sqlite3_context*, const char*, int, void(*)(void*));
+void sqlite3_result_error_code(sqlite3_context*, int);
+void sqlite3_result_error(sqlite3_context*, const char*, int);
+const unsigned char *sqlite3_value_text(sqlite3_value*);
+int sqlite3_value_int(sqlite3_value*);
+
 typedef struct fts5_api fts5_api;
 typedef struct fts5_tokenizer fts5_tokenizer;
 typedef struct Fts5Tokenizer Fts5Tokenizer;
+typedef struct Fts5ExtensionApi Fts5ExtensionApi;
+typedef struct Fts5Context Fts5Context;
+typedef struct Fts5PhraseIter Fts5PhraseIter;
+typedef void (*fts5_extension_function)(
+  const Fts5ExtensionApi*, Fts5Context*,
+  sqlite3_context*, int, sqlite3_value**);
 
 struct fts5_api {
   int iVersion;
   int (*xCreateTokenizer)(
     fts5_api *pApi, const char *zName, void *pContext,
     fts5_tokenizer *pTokenizer,void (*xDestroy)(void*));
+  int (*xFindTokenizer)(
+    fts5_api *pApi, const char *zName, void **ppContext,
+    fts5_tokenizer *pTokenizer);
+  int (*xCreateFunction)(
+    fts5_api *pApi, const char *zName, void *pContext,
+    fts5_extension_function xFunction, void (*xDestroy)(void*));
 };
 
 struct fts5_tokenizer {
@@ -33,6 +55,33 @@ struct fts5_tokenizer {
     int (*xToken)(
         void *pCtx, int tflags,const char *pToken,
         int nToken, int iStart, int iEnd));
+};
+
+struct Fts5ExtensionApi {
+  int iVersion;
+  void *(*xUserData)(Fts5Context*);
+  int (*xColumnCount)(Fts5Context*);
+  int (*xRowCount)(Fts5Context*, sqlite3_int64*);
+  int (*xColumnTotalSize)(Fts5Context*, int, sqlite3_int64*);
+  int (*xTokenize)(
+    Fts5Context*, const char*, int, void*,
+    int (*xToken)(void*, int, const char*, int, int, int));
+  int (*xPhraseCount)(Fts5Context*);
+  int (*xPhraseSize)(Fts5Context*, int);
+  int (*xInstCount)(Fts5Context*, int*);
+  int (*xInst)(Fts5Context*, int, int*, int*, int*);
+  sqlite3_int64 (*xRowid)(Fts5Context*);
+  int (*xColumnText)(Fts5Context*, int, const char**, int*);
+  int (*xColumnSize)(Fts5Context*, int, int*);
+  int (*xQueryPhrase)(Fts5Context*, int, void*,
+    int(*)(const Fts5ExtensionApi*, Fts5Context*, void*)
+  );
+  int (*xSetAuxdata)(Fts5Context*, void*, void(*xDelete)(void*));
+  void *(*xGetAuxdata)(Fts5Context*, int);
+  int (*xPhraseFirst)(Fts5Context*, int, Fts5PhraseIter*, int*, int*);
+  void (*xPhraseNext)(Fts5Context*, Fts5PhraseIter*, int*, int*);
+  int (*xPhraseFirstColumn)(Fts5Context*, int, Fts5PhraseIter*, int*);
+  void (*xPhraseNextColumn)(Fts5Context*, Fts5PhraseIter*, int*);
 };
 ''')
 

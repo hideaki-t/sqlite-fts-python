@@ -4,7 +4,7 @@ import sqlite3
 import re
 from collections import Counter
 
-from sqlitefts import fts5
+from sqlitefts import fts5, fts5_aux
 
 import pytest
 from cffi import FFI
@@ -313,3 +313,17 @@ def test_flags(c):
     c.close()
     assert flags_counter[fts5.FTS5_TOKENIZE_DOCUMENT] == 4
     assert flags_counter[fts5.FTS5_TOKENIZE_QUERY] == 2
+
+
+def test_aux_and_tokenize(c, tm):
+    name = 'super_simple'
+    fts5.register_tokenizer(c, name, tm)
+    fts5_aux.register_aux_function(c, 'tokenize', fts5_aux.aux_tokenize)
+    c.execute("CREATE VIRTUAL TABLE fts USING FTS5(content, tokenize={})".
+              format(name))
+    r = c.executemany('INSERT INTO fts VALUES(?)',
+                      (['hello world'], ['こんにちは 世界']))
+    assert r.rowcount == 2
+    r = c.execute('SELECT tokenize(fts, 0) FROM fts')
+    assert [x[0] for x in r.fetchall()] == ['hello, world', 'こんにちは, 世界']
+    c.close()
