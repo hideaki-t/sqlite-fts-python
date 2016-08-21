@@ -130,9 +130,8 @@ def test_insert(c, tm):
     name = 'super_simple'
     content = 'これは日本語で書かれています'
     fts5.register_tokenizer(c, name, tm)
-    c.execute(
-        "CREATE VIRTUAL TABLE fts USING FTS5(content, tokenize={})".format(
-            name))
+    c.execute("CREATE VIRTUAL TABLE fts USING FTS5(content, tokenize={})".
+              format(name))
     r = c.execute('INSERT INTO fts VALUES(?)', (content, ))
     assert r.rowcount == 1
     r = c.execute("SELECT * FROM fts").fetchone()
@@ -146,9 +145,8 @@ def test_match(c, tm):
     contents = [('abc def', ), ('abc xyz', ), ('あいうえお かきくけこ', ),
                 ('あいうえお らりるれろ', )]
     fts5.register_tokenizer(c, name, tm)
-    c.execute(
-        "CREATE VIRTUAL TABLE fts USING FTS5(content, tokenize={})".format(
-            name))
+    c.execute("CREATE VIRTUAL TABLE fts USING FTS5(content, tokenize={})".
+              format(name))
     r = c.executemany('INSERT INTO fts VALUES(?)', contents)
     assert r.rowcount == 4
     r = c.execute("SELECT * FROM fts").fetchall()
@@ -188,8 +186,8 @@ furnished to do so, subject to the following conditions:'''),
     with c:
         fts5.register_tokenizer(c, name, tm)
         c.execute(
-            "CREATE VIRTUAL TABLE docs USING FTS5(title, body, tokenize={})".format(
-                name))
+            "CREATE VIRTUAL TABLE docs USING FTS5(title, body, tokenize={})".
+            format(name))
         c.executemany("INSERT INTO docs(title, body) VALUES(?, ?)", docs)
         r = c.execute("SELECT * FROM docs WHERE docs MATCH 'Python'").fetchall(
         )
@@ -205,22 +203,18 @@ furnished to do so, subject to the following conditions:'''),
         assert len(r) == 1
         r = c.execute("SELECT * FROM docs WHERE docs MATCH 'らりるれろ'").fetchall()
         assert len(r) == 0
-        assert (
-            c.execute(
-                "SELECT * FROM docs WHERE docs MATCH 'binding'").fetchall()[0]
-            == c.execute(
-                "SELECT * FROM docs WHERE docs MATCH 'body:binding'").fetchall(
-                )[0])
         assert (c.execute(
-            "SELECT * FROM docs WHERE docs MATCH 'body:binding'").fetchall(
-            )[0] == c.execute(
-                "SELECT * FROM docs WHERE docs MATCH 'body:binding'").fetchall(
-                )[0])
-        assert (
-            c.execute("SELECT * FROM docs WHERE docs MATCH 'あいうえお'").fetchall(
-            )[0] == c.execute(
-                "SELECT * FROM docs WHERE docs MATCH 'body:あいうえお'").fetchall()[
-                    0])
+            "SELECT * FROM docs WHERE docs MATCH 'binding'").fetchall()[0] ==
+                c.execute("SELECT * FROM docs WHERE docs MATCH 'body:binding'")
+                .fetchall()[0])
+        assert (c.execute("SELECT * FROM docs WHERE docs MATCH 'body:binding'")
+                .fetchall()[0] ==
+                c.execute("SELECT * FROM docs WHERE docs MATCH 'body:binding'")
+                .fetchall()[0])
+        assert (c.execute(
+            "SELECT * FROM docs WHERE docs MATCH 'あいうえお'").fetchall()[0] ==
+                c.execute("SELECT * FROM docs WHERE docs MATCH 'body:あいうえお'")
+                .fetchall()[0])
         r = c.execute(
             "SELECT * FROM docs WHERE docs MATCH 'title:bind'").fetchall()
         assert len(r) == 0

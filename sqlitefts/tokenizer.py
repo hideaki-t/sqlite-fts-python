@@ -1,7 +1,7 @@
 # coding: utf-8
-"""
+'''
 a proof of concept implementation of SQLite FTS tokenizers in Python
-"""
+'''
 from __future__ import print_function, unicode_literals
 import sys
 
@@ -13,7 +13,7 @@ SQLITE_DONE = 101
 ffi = FFI()
 ffi.cdef('''
 typedef struct sqlite3 sqlite3;
-int sqlite3_db_config(sqlite3 *, int op, ...);
+int sqlite3_db_config(sqlite3 *, int, ...);
 
 /*
 this structure completely depends on the definition of pysqlite_Connection and
@@ -30,10 +30,10 @@ typedef struct {
 ''')
 
 if sys.platform == 'win32':
-    dll = ffi.dlopen("sqlite3.dll")
+    dll = ffi.dlopen('sqlite3.dll')
 else:
     from ctypes.util import find_library
-    dll = ffi.dlopen(find_library("sqlite3"))
+    dll = ffi.dlopen(find_library('sqlite3'))
 
 
 def get_db_from_connection(c):
