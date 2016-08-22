@@ -3,8 +3,8 @@ cache:
 
 environment:
   global:
-    SQLITE_WIN32_URL: https://www.sqlite.org/2016/sqlite-dll-win32-x86-3130000.zip
-    SQLITE_WIN64_URL: https://www.sqlite.org/2016/sqlite-dll-win64-x64-3130000.zip
+    SQLITE_WIN32_URL: https://www.sqlite.org/2016/sqlite-dll-win32-x86-3140100.zip
+    SQLITE_WIN64_URL: https://www.sqlite.org/2016/sqlite-dll-win64-x64-3140100.zip
   matrix:
     - PYTHON: C:\Python35
       ARCH: x86
@@ -37,7 +37,7 @@ install:
   - copy /Y %PYTHON%\DLLs\_sqlite3.pyd %TEMP%\DLLs
   - copy /Y sqlite3.dll %TEMP%\DLLs
   - python -m pip install -U pip
-  - python -m pip install pytest igo-python janome tinysegmenter3
+  - python -m pip install "pytest!=3.0.0" igo-python janome tinysegmenter3
   - python -m pip install -e .
 
 build: false
