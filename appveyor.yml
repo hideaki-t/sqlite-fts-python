@@ -3,9 +3,13 @@ cache:
 
 environment:
   global:
-    SQLITE_WIN32_URL: https://www.sqlite.org/2016/sqlite-dll-win32-x86-3140100.zip
-    SQLITE_WIN64_URL: https://www.sqlite.org/2016/sqlite-dll-win64-x64-3140100.zip
+    SQLITE_WIN32_URL: https://www.sqlite.org/2017/sqlite-dll-win32-x86-3170000.zip
+    SQLITE_WIN64_URL: https://www.sqlite.org/2017/sqlite-dll-win64-x64-3170000.zip
   matrix:
+    - PYTHON: C:\Python36
+      ARCH: x86
+    - PYTHON: C:\Python36-x64
+      ARCH: x64
     - PYTHON: C:\Python35
       ARCH: x86
     - PYTHON: C:\Python35-x64
