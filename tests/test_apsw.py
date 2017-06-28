@@ -1,9 +1,11 @@
 # coding: utf-8
 from __future__ import print_function, unicode_literals
-import apsw
 import re
 
 import sqlitefts as fts
+
+import pytest
+apsw = pytest.importorskip('apsw')
 
 
 class SimpleTokenizer(fts.Tokenizer):
