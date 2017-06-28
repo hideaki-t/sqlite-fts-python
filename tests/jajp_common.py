@@ -1,8 +1,6 @@
 # coding: utf-8
 from __future__ import print_function, unicode_literals
 import sqlite3
-import ctypes
-import struct
 
 import sqlitefts as fts
 
@@ -14,8 +12,8 @@ def test_createtable(name, t):
     fts.register_tokenizer(c, name, fts.make_tokenizer_module(t))
     c.execute(sql)
     r = c.execute(
-        "SELECT * FROM sqlite_master WHERE type='table' AND name='fts'").fetchone(
-        )
+        "SELECT * FROM sqlite_master WHERE type='table' AND name='fts'"
+    ).fetchone()
     assert r
     assert r[str('type')] == 'table' and r[str('name')] == 'fts' and r[str(
         'tbl_name')] == 'fts'
@@ -61,8 +59,8 @@ def test_match(name, t):
 def test_tokenizer_output(name, t):
     with sqlite3.connect(':memory:') as c:
         fts.register_tokenizer(c, name, fts.make_tokenizer_module(t))
-        c.execute("CREATE VIRTUAL TABLE tok1 USING fts3tokenize({})".format(
-            name))
+        c.execute(
+            "CREATE VIRTUAL TABLE tok1 USING fts3tokenize({})".format(name))
         expect = [("This", 0, 4, 0), ("is", 5, 7, 1), ("a", 8, 9, 2),
                   ("test", 10, 14, 3), ("sentence", 15, 23, 4)]
         for a, e in zip(

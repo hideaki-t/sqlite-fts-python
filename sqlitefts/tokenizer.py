@@ -9,6 +9,8 @@ import struct
 
 from cffi import FFI
 
+from . import Error
+
 SQLITE_OK = 0
 SQLITE_DONE = 101
 
@@ -85,7 +87,7 @@ def f():
             db = ffi.cast('PyObject *', id(c)).db
         rc = dll.sqlite3_db_config(db, SQLITE_DBCONFIG_ENABLE_FTS3_TOKENIZER,
                                    ffi.cast('int', 1), ffi.NULL)
-        return rc == 0
+        return rc == SQLITE_OK
 
     return enable_fts3_tokenizer
 
@@ -187,7 +189,13 @@ def register_tokenizer(c, name, tokenizer_module):
     """ register tokenizer module with SQLite connection. """
     module_addr = int(ffi.cast('uintptr_t', tokenizer_module))
     address_blob = buffer(struct.pack("P", module_addr))
-    enable_fts3_tokenizer(c)
-    r = c.execute('SELECT fts3_tokenizer(?, ?)', (name, address_blob))
-    tokenizer_modules[module_addr] = tokenizer_module
+    if enable_fts3_tokenizer(c) == False:
+        raise Error('cannot enable FTS3 tokenizer')
+    cur = c.cursor()
+    try:
+        r = cur.execute('SELECT fts3_tokenizer(?, ?)',
+                        (name, address_blob)).fetchall()
+        tokenizer_modules[module_addr] = tokenizer_module
+    finally:
+        cur.close()
     return r
