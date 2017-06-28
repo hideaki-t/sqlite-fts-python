@@ -2,10 +2,10 @@
 from __future__ import print_function, unicode_literals
 import re
 
-import sqlitefts as fts
-
 import pytest
 apsw = pytest.importorskip('apsw')
+
+import sqlitefts as fts
 
 
 class SimpleTokenizer(fts.Tokenizer):
