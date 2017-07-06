@@ -1,7 +1,7 @@
 |codeship build status|_
 |appveyor build status|_
 
-sqlitefts-python
+
 ================
 
 sqlitefts-python provides binding for tokenizer of `SQLite Full-Text search(FTS3/4)`_.
@@ -15,23 +15,22 @@ so that it is easy to use and deploy. You don't need anything else to full-text 
 But... the predefined tokenizers are not enough for some languages including Japanese. Also it is not easy to write own tokenizers.
 This module provides ability to write your own tokenizers using Python without C compiler by ctypes_ and CFFI_.
 
-It also has ranking functions based on `peewee`_. 
+It also has ranking functions based on `peewee`_.
 
-Requirements
+NOTE: all connections using this modules should be explicitly closed. due to GC behavior, it can be crashed if a connection is left open when a program terminated.
+
 ============
 
- * Python 2.7, Python 3.3+, and PyPy2.7, PyPy3.2, PyPy3.3
+ * Python 2.7, Python 3.3+, and PyPy2.7, PyPy3.2+
  * CFFI_
- * FTS3/4 enabled SQLite (for Windows, you may need to download and replace sqlite3.dll)
+ * FTS3/4 enabled SQLite (for Windows, you may need to download and replace sqlite3.dll) or FTS3/4 enabled APSW_.
 
 
-Licence
 =======
 
 This software is released under the MIT License, see LICENSE.
 
 
-Thanks
 ======
 
  * https://github.com/saaj
@@ -46,3 +45,4 @@ Thanks
 .. _codeship build status: https://codeship.com/projects/164859
 .. |appveyor build status| image:: https://ci.appveyor.com/api/projects/status/github/hideaki-t/sqlite-fts-python?svg=true
 .. _appveyor build status: https://ci.appveyor.com/project/hideaki-t/sqlite-fts-python
+.. _APSW: https://github.com/rogerbinns/apsw
