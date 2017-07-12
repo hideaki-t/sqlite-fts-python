@@ -20,8 +20,21 @@ else:
 
 ffi = FFI()
 ffi.cdef('''
-typedef struct sqlite3 sqlite3;
-int sqlite3_db_config(sqlite3 *, int op, ...);
+typedef struct sqlite3_vfs sqlite3_vfs;
+typedef struct sqlite3_mutex sqlite3_mutex;
+struct Vdbe;
+typedef struct CollSeq CollSeq;
+typedef struct Db Db;
+
+typedef struct sqlite3 {
+  sqlite3_vfs *pVfs;
+  struct Vdbe *pVdbe;
+  CollSeq *pDfltColl;
+  sqlite3_mutex *mutex;
+  Db *aDb;
+  int nDb;
+  int flags;
+} sqlite3;
 
 /*
 this structure completely depends on the definition of pysqlite_Connection and
@@ -65,28 +78,10 @@ struct sqlite3_tokenizer_cursor {
   size_t pos;
   size_t offset;
 };
-
-typedef struct sqlite3_vfs sqlite3_vfs;
-typedef struct sqlite3_mutex sqlite3_mutex;
-struct Vdbe;
-typedef struct CollSeq CollSeq;
-typedef struct Db Db;
-
-struct sqlite3 {
-  sqlite3_vfs *pVfs;
-  struct Vdbe *pVdbe;
-  CollSeq *pDfltColl;
-  sqlite3_mutex *mutex;
-  Db *aDb;
-  int nDb;
-  int flags;
-};
 ''')
 
 
 def f():
-    SQLITE_DBCONFIG_ENABLE_FTS3_TOKENIZER = 1004
-
     def enable_fts3_tokenizer(c):
         db = getattr(c, '_db', None)
         if db:
