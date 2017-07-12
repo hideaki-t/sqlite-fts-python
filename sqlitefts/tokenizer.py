@@ -11,7 +11,7 @@ from cffi import FFI
 
 SQLITE_OK = 0
 SQLITE_DONE = 101
-SQLITE_Fts3Tokenizer = 0x00200000
+SQLITE_Fts3Tokenizer = 0x40000000
 
 if sys.version_info.major == 2:
     global buffer
