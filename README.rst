@@ -1,7 +1,7 @@
 |codeship build status|_
 |appveyor build status|_
 
-
+sqlitefts-python
 ================
 
 sqlitefts-python provides binding for tokenizer of `SQLite Full-Text search(FTS3/4)`_.
@@ -19,6 +19,7 @@ It also has ranking functions based on `peewee`_.
 
 NOTE: all connections using this modules should be explicitly closed. due to GC behavior, it can be crashed if a connection is left open when a program terminated.
 
+Requirements
 ============
 
  * Python 2.7, Python 3.3+, and PyPy2.7, PyPy3.2+
@@ -29,11 +30,13 @@ NOTE: all connections using this modules should be explicitly closed. due to GC 
    * SQLite 3.10.2 and older versions do not have extra requirements. 2-arg fts3_tokenizer is always avaiable.
    * SQLite 3.12.0 and later vesrions do not have extra requirements. 2-arg fts3_tokenizer can be enabled dynamically.
 
+Licence
 =======
 
 This software is released under the MIT License, see LICENSE.
 
 
+Thanks
 ======
 
  * https://github.com/saaj
