@@ -165,7 +165,7 @@ def make_tokenizer_module(tokenizer):
                 if normalized:
                     break
 
-            ppToken[0] = ffi.new('char []', normalized)  # ??
+            ppToken[0] = ffi.from_buffer(normalized)
             pnBytes[0] = len(normalized)
             piStartOffset[0] = inputBegin
             piEndOffset[0] = inputEnd
