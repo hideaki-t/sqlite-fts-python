@@ -13,6 +13,7 @@ from . import Error
 
 SQLITE_OK = 0
 SQLITE_DONE = 101
+SQLITE_Fts3Tokenizer = 0x00200000
 
 if sys.version_info.major == 2:
     global buffer
@@ -66,13 +67,23 @@ struct sqlite3_tokenizer_cursor {
   size_t pos;
   size_t offset;
 };
-''')
 
-if sys.platform == 'win32':
-    dll = ffi.dlopen("sqlite3.dll")
-else:
-    from ctypes.util import find_library
-    dll = ffi.dlopen(find_library("sqlite3"))
+typedef struct sqlite3_vfs sqlite3_vfs;
+typedef struct sqlite3_mutex sqlite3_mutex;
+struct Vdbe;
+typedef struct CollSeq CollSeq;
+typedef struct Db Db;
+
+struct sqlite3 {
+  sqlite3_vfs *pVfs;
+  struct Vdbe *pVdbe;
+  CollSeq *pDfltColl;
+  sqlite3_mutex *mutex;
+  Db *aDb;
+  int nDb;
+  int flags;
+};
+''')
 
 
 def f():
@@ -85,9 +96,7 @@ def f():
             db = ffi.cast('sqlite3*', db)
         else:
             db = ffi.cast('PyObject *', id(c)).db
-        rc = dll.sqlite3_db_config(db, SQLITE_DBCONFIG_ENABLE_FTS3_TOKENIZER,
-                                   ffi.cast('int', 1), ffi.NULL)
-        return rc == SQLITE_OK
+        db.flags |= SQLITE_Fts3Tokenizer
 
     return enable_fts3_tokenizer
 
@@ -189,8 +198,7 @@ def register_tokenizer(c, name, tokenizer_module):
     """ register tokenizer module with SQLite connection. """
     module_addr = int(ffi.cast('uintptr_t', tokenizer_module))
     address_blob = buffer(struct.pack("P", module_addr))
-    if enable_fts3_tokenizer(c) == False:
-        raise Error('cannot enable FTS3 tokenizer')
+    enable_fts3_tokenizer(c)
     cur = c.cursor()
     try:
         r = cur.execute('SELECT fts3_tokenizer(?, ?)',
