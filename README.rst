@@ -13,7 +13,7 @@ It is easy to use and has enough functionality. Python has a built-in SQLite mod
 so that it is easy to use and deploy. You don't need anything else to full-text search.
 
 But... the predefined tokenizers are not enough for some languages including Japanese. Also it is not easy to write own tokenizers.
-This module provides ability to write your own tokenizers using Python without C compiler by ctypes_ and CFFI_.
+This module provides ability to write your own tokenizers using Python without C compiler by CFFI_.
 
 It also has ranking functions based on `peewee`_.
 
@@ -23,8 +23,10 @@ NOTE: all connections using this modules should be explicitly closed. due to GC 
 
  * Python 2.7, Python 3.3+, and PyPy2.7, PyPy3.2+
  * CFFI_
- * FTS3/4 enabled SQLite (for Windows, you may need to download and replace sqlite3.dll) or FTS3/4 enabled APSW_.
-
+ * FTS3/4 enabled SQLite3 or APSW_ (for Windows, you may need to download and replace sqlite3.dll)
+   * SQLite 3.11.x have to be compiled with -DSQLITE_ENABLE_FTS3_TOKENIZER to enable 2-arg fts3_tokenizer
+   * SQLite 3.10.2 and older versions do not have extra requirements. 2-arg fts3_tokenizer is always avaiable.
+   * SQLite 3.12.0 and later vesrions do not have extra requirements. 2-arg fts3_tokenizer can be enabled dynamically.
 
 =======
 
