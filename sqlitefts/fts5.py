@@ -143,8 +143,9 @@ def register_tokenizer(c, name, tokenizer, context=None, on_destroy=None):
             on_destroy(ffi.from_handle(context))
 
     fts5_tokenizers[name] = (tokenizer, pContext, xDestroy)
-    r = fts5api.xCreateTokenizer(fts5api, name.encode('utf-8'), pContext,
-                                 tokenizer, xDestroy)
+    r = fts5api.xCreateTokenizer(fts5api,
+                                 name.encode('utf-8'), pContext, tokenizer,
+                                 xDestroy)
     return r == SQLITE_OK
 
 
@@ -192,8 +193,9 @@ def make_fts5_tokenizer(tokenizer):
                 continue
 
             # TODO: Synonym Support
-            r = xToken(pCtx, 0, ffi.new('char[]', normalized), len(normalized),
-                       begin, end)
+            r = xToken(pCtx, 0,
+                       ffi.from_buffer(normalized), len(normalized), begin,
+                       end)
             if r != SQLITE_OK:
                 return r
         return SQLITE_OK
@@ -203,7 +205,8 @@ def make_fts5_tokenizer(tokenizer):
     return fts5_tokenizer
 
 
-__all__ = ['register_tokenizer', 'make_fts5_tokenizer', 'FTS5Tokenizer',
-           'FTS5_TOKENIZE_QUERY', 'FTS5_TOKENIZE_PREFIX',
-           'FTS5_TOKENIZE_DOCUMENT', 'FTS5_TOKENIZE_AUX',
-           'FTS5_TOKEN_COLOCATED']
+__all__ = [
+    'register_tokenizer', 'make_fts5_tokenizer', 'FTS5Tokenizer',
+    'FTS5_TOKENIZE_QUERY', 'FTS5_TOKENIZE_PREFIX', 'FTS5_TOKENIZE_DOCUMENT',
+    'FTS5_TOKENIZE_AUX', 'FTS5_TOKEN_COLOCATED'
+]

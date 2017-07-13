@@ -3,7 +3,6 @@
 a proof of concept implementation of SQLite FTS tokenizers in Python
 '''
 from __future__ import print_function, unicode_literals
-import sys
 
 from cffi import FFI
 
@@ -12,8 +11,21 @@ SQLITE_DONE = 101
 
 ffi = FFI()
 ffi.cdef('''
-typedef struct sqlite3 sqlite3;
-int sqlite3_db_config(sqlite3 *, int, ...);
+typedef struct sqlite3_vfs sqlite3_vfs;
+typedef struct sqlite3_mutex sqlite3_mutex;
+struct Vdbe;
+typedef struct CollSeq CollSeq;
+typedef struct Db Db;
+
+typedef struct sqlite3 {
+  sqlite3_vfs *pVfs;
+  struct Vdbe *pVdbe;
+  CollSeq *pDfltColl;
+  sqlite3_mutex *mutex;
+  Db *aDb;
+  int nDb;
+  int flags;
+} sqlite3;
 
 /*
 this structure completely depends on the definition of pysqlite_Connection and
@@ -28,12 +40,6 @@ typedef struct {
   sqlite3 *db;
 } PyObject;
 ''')
-
-if sys.platform == 'win32':
-    dll = ffi.dlopen('sqlite3.dll')
-else:
-    from ctypes.util import find_library
-    dll = ffi.dlopen(find_library('sqlite3'))
 
 
 def get_db_from_connection(c):

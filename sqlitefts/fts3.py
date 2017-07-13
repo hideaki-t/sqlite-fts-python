@@ -6,10 +6,9 @@ from __future__ import print_function, unicode_literals
 import sys
 import struct
 
-from .tokenizer import (ffi, dll, get_db_from_connection, SQLITE_OK,
-                        SQLITE_DONE)
+from .tokenizer import (ffi, get_db_from_connection, SQLITE_OK, SQLITE_DONE)
 
-SQLITE_DBCONFIG_ENABLE_FTS3_TOKENIZER = 1004
+SQLITE_Fts3Tokenizer = 0x40000000
 
 ffi.cdef('''
 typedef struct sqlite3_tokenizer_module sqlite3_tokenizer_module;
@@ -113,7 +112,7 @@ def make_tokenizer_module(tokenizer):
                 if normalized:
                     break
 
-            ppToken[0] = ffi.new('char []', normalized)
+            ppToken[0] = ffi.from_buffer(normalized)
             pnBytes[0] = len(normalized)
             piStartOffset[0] = inputBegin
             piEndOffset[0] = inputEnd
@@ -143,19 +142,22 @@ def make_tokenizer_module(tokenizer):
 
 def enable_fts3_tokenizer(c):
     db = get_db_from_connection(c)
-    rc = dll.sqlite3_db_config(db, SQLITE_DBCONFIG_ENABLE_FTS3_TOKENIZER,
-                               ffi.cast('int', 1), ffi.NULL)
-    return rc == 0
+    db.flags |= SQLITE_Fts3Tokenizer
 
 
-def register_tokenizer(c, name, tokenizer_module):
+def register_tokenizer(conn, name, tokenizer_module):
     '''register tokenizer module with SQLite connection.'''
     module_addr = int(ffi.cast('uintptr_t', tokenizer_module))
     address_blob = struct.pack('P', module_addr)
     if sys.version_info.major == 2:
         address_blob = buffer(address_blob)
-    enable_fts3_tokenizer(c)
-    r = c.execute('SELECT fts3_tokenizer(?, ?)', (name, address_blob))
+    enable_fts3_tokenizer(conn)
+    cur = conn.cursor()
+    try:
+        r = cur.execute('SELECT fts3_tokenizer(?, ?)',
+                        (name, address_blob)).fetchall()
+    finally:
+        cur.close()
     return r
 
 

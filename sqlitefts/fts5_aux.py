@@ -1,8 +1,15 @@
 from __future__ import print_function, unicode_literals
-from .tokenizer import dll, SQLITE_OK
+import sys
+from .tokenizer import SQLITE_OK
 from .fts5 import ffi, fts5_api_from_db
 
 SQLITE_TRANSIENT = ffi.cast('void(*)(void*)', -1)
+
+if sys.platform == 'win32':
+    dll = ffi.dlopen("sqlite3.dll")
+else:
+    from ctypes.util import find_library
+    dll = ffi.dlopen(find_library("sqlite3"))
 
 _aux_funcs_holder = {}
 """holding references of aux funcs to prevent GC"""
@@ -16,8 +23,9 @@ def aux_tokenize(pApi, pFts, pCtx, nVal, apVal):
     this function is a callback function, thus it should not be called directly
     '''
     if nVal != 1:
-        dll.sqlite3_error(pCtx, ffi.new(
-            'char[]', 'this function accepts only 1 argument'))
+        dll.sqlite3_error(pCtx,
+                          ffi.new('char[]',
+                                  'this function accepts only 1 argument'))
         return
 
     col = dll.sqlite3_value_int(apVal[0])
@@ -37,8 +45,9 @@ def aux_tokenize(pApi, pFts, pCtx, nVal, apVal):
 
     rc = pApi.xTokenize(pFts, pz[0], pn[0], ffi.NULL, token)
     if rc == SQLITE_OK:
-        dll.sqlite3_result_text(pCtx, ffi.new('char []', b', '.join(tokens)),
-                                -1, SQLITE_TRANSIENT)
+        dll.sqlite3_result_text(pCtx,
+                                ffi.new('char []', b', '.join(tokens)), -1,
+                                SQLITE_TRANSIENT)
     else:
         dll.sqlite3_error_code(pCtx, rc)
 
