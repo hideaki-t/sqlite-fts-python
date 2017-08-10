@@ -6,11 +6,16 @@ from __future__ import print_function, unicode_literals
 import sys
 import struct
 
-from .tokenizer import (ffi, get_db_from_connection, SQLITE_OK, SQLITE_DONE)
+from .tokenizer import (ffi, dll, get_db_from_connection, SQLITE_OK,
+                        SQLITE_DONE)
+from .error import Error
 
-SQLITE_Fts3Tokenizer = 0x40000000
+SQLITE_DBCONFIG_ENABLE_FTS3_TOKENIZER = 1004
 
 ffi.cdef('''
+typedef struct sqlite3 sqlite3;
+int sqlite3_db_config(sqlite3 *, int op, ...);
+
 typedef struct sqlite3_tokenizer_module sqlite3_tokenizer_module;
 typedef struct sqlite3_tokenizer sqlite3_tokenizer;
 typedef struct sqlite3_tokenizer_cursor sqlite3_tokenizer_cursor;
@@ -142,7 +147,9 @@ def make_tokenizer_module(tokenizer):
 
 def enable_fts3_tokenizer(c):
     db = get_db_from_connection(c)
-    db.flags |= SQLITE_Fts3Tokenizer
+    rc = dll.sqlite3_db_config(db, SQLITE_DBCONFIG_ENABLE_FTS3_TOKENIZER,
+                               ffi.cast('int', 1), ffi.NULL)
+    return rc == 0
 
 
 def register_tokenizer(conn, name, tokenizer_module):
@@ -151,7 +158,8 @@ def register_tokenizer(conn, name, tokenizer_module):
     address_blob = struct.pack('P', module_addr)
     if sys.version_info.major == 2:
         address_blob = buffer(address_blob)
-    enable_fts3_tokenizer(conn)
+    if not enable_fts3_tokenizer(conn):
+        raise Error('cannot enable 2-arg fts3_tokenizer')
     cur = conn.cursor()
     try:
         r = cur.execute('SELECT fts3_tokenizer(?, ?)',
