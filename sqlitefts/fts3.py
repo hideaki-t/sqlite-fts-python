@@ -5,6 +5,7 @@ support library to write SQLite FTS3 tokenizer
 from __future__ import print_function, unicode_literals
 import sys
 import struct
+import warnings
 
 from .tokenizer import (ffi, dll, get_db_from_connection, SQLITE_OK,
                         SQLITE_DONE)
@@ -13,7 +14,6 @@ from .error import Error
 SQLITE_DBCONFIG_ENABLE_FTS3_TOKENIZER = 1004
 
 ffi.cdef('''
-typedef struct sqlite3 sqlite3;
 int sqlite3_db_config(sqlite3 *, int op, ...);
 
 typedef struct sqlite3_tokenizer_module sqlite3_tokenizer_module;
@@ -149,7 +149,7 @@ def enable_fts3_tokenizer(c):
     db = get_db_from_connection(c)
     rc = dll.sqlite3_db_config(db, SQLITE_DBCONFIG_ENABLE_FTS3_TOKENIZER,
                                ffi.cast('int', 1), ffi.NULL)
-    return rc == 0
+    return rc == SQLITE_OK
 
 
 def register_tokenizer(conn, name, tokenizer_module):
@@ -159,7 +159,7 @@ def register_tokenizer(conn, name, tokenizer_module):
     if sys.version_info.major == 2:
         address_blob = buffer(address_blob)
     if not enable_fts3_tokenizer(conn):
-        raise Error('cannot enable 2-arg fts3_tokenizer')
+        warnings.warn('enabling 2-arg fts3_tokenizer failed.', RuntimeWarning)
     cur = conn.cursor()
     try:
         r = cur.execute('SELECT fts3_tokenizer(?, ?)',

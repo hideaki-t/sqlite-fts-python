@@ -20,21 +20,7 @@ else:
     dll = ffi.dlopen(find_library("sqlite3"))
 
 ffi.cdef('''
-typedef struct sqlite3_vfs sqlite3_vfs;
-typedef struct sqlite3_mutex sqlite3_mutex;
-struct Vdbe;
-typedef struct CollSeq CollSeq;
-typedef struct Db Db;
-
-typedef struct sqlite3 {
-  sqlite3_vfs *pVfs;
-  struct Vdbe *pVdbe;
-  CollSeq *pDfltColl;
-  sqlite3_mutex *mutex;
-  Db *aDb;
-  int nDb;
-  int flags;
-} sqlite3;
+typedef struct sqlite3 sqlite3;
 
 /*
 this structure completely depends on the definition of pysqlite_Connection and
