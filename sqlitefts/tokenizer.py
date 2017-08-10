@@ -6,6 +6,7 @@ from __future__ import print_function, unicode_literals
 
 import sys
 import struct
+import warnings
 
 from cffi import FFI
 
@@ -13,7 +14,7 @@ from . import Error
 
 SQLITE_OK = 0
 SQLITE_DONE = 101
-SQLITE_Fts3Tokenizer = 0x40000000
+SQLITE_DBCONFIG_ENABLE_FTS3_TOKENIZER = 1004
 
 if sys.version_info.major == 2:
     global buffer
@@ -21,22 +22,16 @@ else:
     buffer = lambda x: x
 
 ffi = FFI()
-ffi.cdef('''
-typedef struct sqlite3_vfs sqlite3_vfs;
-typedef struct sqlite3_mutex sqlite3_mutex;
-struct Vdbe;
-typedef struct CollSeq CollSeq;
-typedef struct Db Db;
 
-typedef struct sqlite3 {
-  sqlite3_vfs *pVfs;
-  struct Vdbe *pVdbe;
-  CollSeq *pDfltColl;
-  sqlite3_mutex *mutex;
-  Db *aDb;
-  int nDb;
-  int flags;
-} sqlite3;
+if sys.platform == 'win32':
+    dll = ffi.dlopen("sqlite3.dll")
+else:
+    from ctypes.util import find_library
+    dll = ffi.dlopen(find_library("sqlite3"))
+
+ffi.cdef('''
+typedef struct sqlite3 sqlite3;
+int sqlite3_db_config(sqlite3 *, int op, ...);
 
 /*
 this structure completely depends on the definition of pysqlite_Connection and
@@ -91,7 +86,9 @@ def f():
             db = ffi.cast('sqlite3*', db)
         else:
             db = ffi.cast('PyObject *', id(c)).db
-        db.flags |= SQLITE_Fts3Tokenizer
+        rc = dll.sqlite3_db_config(db, SQLITE_DBCONFIG_ENABLE_FTS3_TOKENIZER,
+                                   ffi.cast('int', 1), ffi.NULL)
+        return rc == SQLITE_OK
 
     return enable_fts3_tokenizer
 
@@ -193,7 +190,8 @@ def register_tokenizer(c, name, tokenizer_module):
     """ register tokenizer module with SQLite connection. """
     module_addr = int(ffi.cast('uintptr_t', tokenizer_module))
     address_blob = buffer(struct.pack("P", module_addr))
-    enable_fts3_tokenizer(c)
+    if not enable_fts3_tokenizer(c):
+        warnings.warn('enabling 2-arg fts3_tokenizer failed.', RuntimeWarning)
     cur = c.cursor()
     try:
         r = cur.execute('SELECT fts3_tokenizer(?, ?)',

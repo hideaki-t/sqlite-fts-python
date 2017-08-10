@@ -5,3 +5,5 @@
    * fix a memory leak that can cause SEGV
    * it may work on environments that cannot use sqlite3_db_config to enable two argument version fts3_tokenizer (e.g. SQLite 3.11 and prior versions)
    * add unittest using apsw
+0.4.9.2
+   * use public API instead of accessing non public intefaces of SQLite objects. it requires libsqlite3.so/sqlite3.dll or equivalent again. see https://github.com/hideaki-t/sqlite-fts-python/issues/9
