@@ -4,12 +4,21 @@ a proof of concept implementation of SQLite FTS tokenizers in Python
 '''
 from __future__ import print_function, unicode_literals
 
+import sys
+
 from cffi import FFI
 
 SQLITE_OK = 0
 SQLITE_DONE = 101
 
 ffi = FFI()
+
+if sys.platform == 'win32':
+    dll = ffi.dlopen("sqlite3.dll")
+else:
+    from ctypes.util import find_library
+    dll = ffi.dlopen(find_library("sqlite3"))
+
 ffi.cdef('''
 typedef struct sqlite3_vfs sqlite3_vfs;
 typedef struct sqlite3_mutex sqlite3_mutex;

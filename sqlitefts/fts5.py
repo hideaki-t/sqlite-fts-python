@@ -5,16 +5,19 @@ support library to write SQLite FTS5 tokenizer
 from __future__ import print_function, unicode_literals
 import struct
 
-from .tokenizer import ffi, SQLITE_OK
+from .tokenizer import ffi, dll, get_db_from_connection, SQLITE_OK
 
 FTS5_TOKENIZE_QUERY = 0x0001
 FTS5_TOKENIZE_PREFIX = 0x0002
 FTS5_TOKENIZE_DOCUMENT = 0x0004
 FTS5_TOKENIZE_AUX = 0x0008
 FTS5_TOKEN_COLOCATED = 0x0001
+SQLITE_ROW = 100
+FTS5_API_PTR = ffi.new('const char[]', b'fts5_api_ptr')
 
 ffi.cdef('''
 typedef struct sqlite3_context sqlite3_context;
+typedef struct sqlite3_stmt sqlite3_stmt;
 typedef struct Mem sqlite3_value;
 typedef uint64_t sqlite3_int64;
 
@@ -23,6 +26,10 @@ void sqlite3_result_error_code(sqlite3_context*, int);
 void sqlite3_result_error(sqlite3_context*, const char*, int);
 const unsigned char *sqlite3_value_text(sqlite3_value*);
 int sqlite3_value_int(sqlite3_value*);
+int sqlite3_prepare_v2(sqlite3*, const char*, int, sqlite3_stmt**, const char**);
+int sqlite3_bind_pointer(sqlite3_stmt*, int, void*, const char*, void(*)(void*));
+int sqlite3_step(sqlite3_stmt*);
+int sqlite3_finalize(sqlite3_stmt*);
 
 typedef struct fts5_api fts5_api;
 typedef struct fts5_tokenizer fts5_tokenizer;
@@ -120,9 +127,26 @@ fts5_tokenizers = {}
 def fts5_api_from_db(c):
     cur = c.cursor()
     try:
-        cur.execute('SELECT fts5()')
-        blob = cur.fetchone()[0]
-        pRet = ffi.cast('fts5_api*', struct.unpack('P', blob)[0])
+        cur.execute('SELECT sqlite_version()')
+        ver = tuple(int(x) for x in cur.fetchone()[0].split('.'))
+        if ver < (3, 20, 0):
+            cur.execute('SELECT fts5()')
+            blob = cur.fetchone()[0]
+            pRet = ffi.cast('fts5_api*', struct.unpack('P', blob)[0])
+        else:
+            db = get_db_from_connection(c)
+            pRet = ffi.new('fts5_api**')
+            pStmt = ffi.new('sqlite3_stmt**')
+            rc = dll.sqlite3_prepare_v2(db, b'SELECT fts5(?1)', -1, pStmt,
+                                        ffi.NULL)
+            if rc == SQLITE_OK:
+                r = dll.sqlite3_bind_pointer(pStmt[0], 1, pRet, FTS5_API_PTR,
+                                             ffi.NULL)
+                if r != SQLITE_OK or dll.sqlite3_step(pStmt[0]) != SQLITE_ROW:
+                    pRet = None
+                else:
+                    pRet = pRet[0]
+            dll.sqlite3_finalize(pStmt[0])
     finally:
         cur.close()
     return pRet
