@@ -41,7 +41,7 @@ install:
   - copy /Y %PYTHON%\DLLs\_sqlite3.pyd %TEMP%\DLLs
   - copy /Y sqlite3.dll %TEMP%\DLLs
   - python -m pip install -U pip
-  - python -m pip install "pytest!=3.0.0" igo-python janome tinysegmenter3
+  - python -m pip install "pytest!=3.0.0" faker igo-python janome tinysegmenter3
   - python -m pip install -e .
 
 build: false
