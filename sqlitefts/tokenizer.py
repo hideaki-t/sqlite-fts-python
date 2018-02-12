@@ -25,8 +25,8 @@ if hasattr(ctypes.pythonapi, '_Py_PrintReferences'):
     ffi.cdef('''
 typedef struct sqlite3 sqlite3;
 typedef struct {
-  void* _ob_next;
-  void* _ob_prev;
+  void *_ob_next;
+  void *_ob_prev;
   size_t ob_refcnt;
   void *ob_type;
   sqlite3 *db;
