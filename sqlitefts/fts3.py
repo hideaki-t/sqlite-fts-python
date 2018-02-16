@@ -93,8 +93,10 @@ def make_tokenizer_module(tokenizer):
     def xopen(pTokenizer, pInput, nInput, ppCursor):
         cur = ffi.new('sqlite3_tokenizer_cursor *')
         tokenizer = ffi.from_handle(pTokenizer.t)
-        tokens = tokenizer.tokenize(ffi.string(pInput).decode('utf-8'))
-        tknh = ffi.new_handle(tokens)
+        i = ffi.string(pInput).decode('utf-8')
+        tokens = [(n.encode('utf-8'), b, e)
+                  for n, b, e in tokenizer.tokenize(i) if n]
+        tknh = ffi.new_handle(iter(tokens))
         cur.pTokenizer = pTokenizer
         cur.tokens = tknh
         cur.pos = 0
@@ -111,12 +113,7 @@ def make_tokenizer_module(tokenizer):
         try:
             cur = pCursor[0]
             tokens = ffi.from_handle(cur.tokens)
-            while True:
-                normalized, inputBegin, inputEnd = next(tokens)
-                normalized = normalized.encode('utf-8')
-                if normalized:
-                    break
-
+            normalized, inputBegin, inputEnd = next(tokens)
             ppToken[0] = ffi.from_buffer(normalized)
             pnBytes[0] = len(normalized)
             piStartOffset[0] = inputBegin
