@@ -72,7 +72,7 @@ Requirements
    * SQLite 3.10.2 and older versions do not have extra requirements. 2-arg fts3_tokenizer is always avaiable.
    * SQLite 3.12.0 and later vesrions do not have extra requirements. 2-arg fts3_tokenizer can be enabled dynamically.
 
-Note for APSW users: An APSW Amalgamation build does not expose SQLite APIs used in this module, so libsqlite3.so/sqlite3.dll is also required even it has no runtime library dependencies on SQLite. An APSW local build already depends on the shared library.
+Note for APSW users: An APSW Amalgamation build does not expose SQLite APIs used in this module, so libsqlite3.so/sqlite3.dll is also required even it has no runtime library dependencies on SQLite. An APSW local build already depends on the shared library. Detail: sqlite3_db_config can be invoked via Connection.config, but it rejects SQLITE_DBCONFIG_ENABLE_FTS3_TOKENIZER to register a new tokenizer. tested at APSW 3.21.0-r1.
 
 Licence
 =======
