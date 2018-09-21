@@ -3,8 +3,8 @@ cache:
 
 environment:
   global:
-    SQLITE_WIN32_URL: https://www.sqlite.org/2018/sqlite-dll-win32-x86-3240000.zip
-    SQLITE_WIN64_URL: https://www.sqlite.org/2018/sqlite-dll-win64-x64-3240000.zip
+    SQLITE_WIN32_URL: https://www.sqlite.org/2018/sqlite-dll-win32-x86-3250100.zip
+    SQLITE_WIN64_URL: https://www.sqlite.org/2018/sqlite-dll-win64-x64-3250100.zip
   matrix:
     - PYTHON: C:\Python37
       ARCH: x86
