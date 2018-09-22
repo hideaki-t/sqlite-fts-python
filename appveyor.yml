@@ -22,10 +22,6 @@ environment:
       ARCH: x86
     - PYTHON: C:\Python34-x64
       ARCH: x64
-    - PYTHON: C:\Python33
-      ARCH: x86
-    - PYTHON: C:\Python33-x64
-      ARCH: x64
     - PYTHON: C:\Python27
       ARCH: x86
     - PYTHON: C:\Python27-x64

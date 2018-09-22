@@ -13,7 +13,6 @@ setup(
         'License :: OSI Approved :: MIT License',
         'Operating System :: OS Independent',
         'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
@@ -27,7 +26,5 @@ setup(
     author_email='mymelo@gmail.com',
     license='MIT',
     keywords=['SQLite', 'Full-text search', 'FTS'],
-    install_requires=[
-        'cffi', 'pycparser<2.19' if sys.version_info == (3, 3) else 'pycparser'
-    ],
+    install_requires=['cffi'],
 )
