@@ -1,4 +1,4 @@
-|codeship build status|_
+|travisci build status|_
 |appveyor build status|_
 
 sqlitefts-python
@@ -93,8 +93,8 @@ Thanks
 .. _peewee: https://github.com/coleifer/peewee
 .. _CFFI: https://cffi.readthedocs.io/en/latest/
 .. _ctypes: https://docs.python.org/library/ctypes.html
-.. |codeship build status| image:: https://codeship.com/projects/fc2fe0d0-33d2-0134-50c3-7e300f67430e/status?branch=master
-.. _codeship build status: https://codeship.com/projects/164859
+.. |travisci build status| image:: https://api.travis-ci.org/hideaki-t/sqlite-fts-python.svg?branch=master
+.. _travisci build status: https://travis-ci.org/hideaki-t/sqlite-fts-python
 .. |appveyor build status| image:: https://ci.appveyor.com/api/projects/status/github/hideaki-t/sqlite-fts-python?svg=true
 .. _appveyor build status: https://ci.appveyor.com/project/hideaki-t/sqlite-fts-python
 .. _APSW: https://github.com/rogerbinns/apsw

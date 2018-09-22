@@ -1,3 +1,6 @@
+0.5.1
+   * drop Python 3.3 support. Although this module still works on Python 3.3, but it won't be tested anymore.
+
 0.5.0
    * add FTS5 support. it works with both old and new FTS5 API. see https://sqlite.org/releaselog/3_20_0.html
    
