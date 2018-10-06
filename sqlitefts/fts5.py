@@ -96,7 +96,7 @@ class FTS5Tokenizer(object):
     Tokenizer base class for FTS5.
     '''
 
-    def tokenize(text, flags=None):
+    def tokenize(self, text, flags=None):
         '''
         Tokenize given unicode text. Yields each tokenized token,
         start position(in bytes), end positon(in bytes).
