@@ -2,14 +2,16 @@
 '''
 support library to write SQLite FTS3 tokenizer
 '''
-from __future__ import print_function, unicode_literals
-import sys
 import struct
 import warnings
-
+from typing import Iterator, Tuple, Union, List, Any, TYPE_CHECKING
 from .tokenizer import (ffi, dll, get_db_from_connection, SQLITE_OK,
                         SQLITE_DONE)
-from .error import Error
+
+if TYPE_CHECKING:
+    import sqlite3
+    import apsw  # type: ignore
+TokenizerModule = Any  # should be ffi.CData
 
 SQLITE_DBCONFIG_ENABLE_FTS3_TOKENIZER = 1004
 
@@ -50,7 +52,7 @@ class Tokenizer(object):
     Tokenizer base class.
     '''
 
-    def tokenize(text):
+    def tokenize(self, text: str) -> Iterator[Tuple[str, int, int]]:
         '''
         Tokenize given unicode text. Yields each tokenized token,
         start position(in bytes), end positon(in bytes)
@@ -62,7 +64,7 @@ tokenizer_modules = {}
 '''hold references to prevent GC'''
 
 
-def make_tokenizer_module(tokenizer):
+def make_tokenizer_module(tokenizer: Tokenizer) -> TokenizerModule:
     '''tokenizer module'''
     tokenizers = {}
     cursors = {}
@@ -142,14 +144,16 @@ def make_tokenizer_module(tokenizer):
     return tokenizer_module
 
 
-def enable_fts3_tokenizer(c):
+def enable_fts3_tokenizer(c: 'Union[sqlite3.Connection, apsw.Connection]') -> bool:
     db = get_db_from_connection(c)
     rc = dll.sqlite3_db_config(db, SQLITE_DBCONFIG_ENABLE_FTS3_TOKENIZER,
                                ffi.cast('int', 1), ffi.NULL)
     return rc == SQLITE_OK
 
 
-def register_tokenizer(conn, name, tokenizer_module):
+def register_tokenizer(conn: 'Union[sqlite3.Connection, apsw.Connection]',
+                       name: str,
+                       tokenizer_module: TokenizerModule) -> List[Any]:
     '''register tokenizer module with SQLite connection.'''
     module_addr = int(ffi.cast('uintptr_t', tokenizer_module))
     address_blob = struct.pack('P', module_addr)

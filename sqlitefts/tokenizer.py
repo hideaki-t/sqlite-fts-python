@@ -2,12 +2,17 @@
 '''
 a proof of concept implementation of SQLite FTS tokenizers in Python
 '''
-from __future__ import print_function, unicode_literals
-
 import sys
 import ctypes
 
-from cffi import FFI
+from cffi import FFI  # type: ignore
+
+from typing import Any, Union, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    import sqlite3
+    import apsw  # type: ignore
+SQLITE3DBHandle = Any  # ffi.CData
 
 SQLITE_OK = 0
 SQLITE_DONE = 101
@@ -44,7 +49,7 @@ typedef struct {
 ''')
 
 
-def get_db_from_connection(c):
+def get_db_from_connection(c: 'Union[sqlite3.Connection, apsw.Connection]') -> SQLITE3DBHandle:
     db = getattr(c, '_db', None)
     if db:
         # pypy's SQLite3 connection has _db using cffi

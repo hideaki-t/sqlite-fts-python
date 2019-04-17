@@ -2,10 +2,15 @@
 '''
 support library to write SQLite FTS5 tokenizer
 '''
-from __future__ import print_function, unicode_literals
 import struct
+from typing import Callable, Any, Union, Optional, TYPE_CHECKING, Iterable, Tuple, Dict
 
 from .tokenizer import ffi, dll, get_db_from_connection, SQLITE_OK
+from .fts3 import Tokenizer as FTS3Tokenizer
+if TYPE_CHECKING:
+    import sqlite3
+    import apsw  # type: ignore
+FTS5TokenizerHandle = Any  # should be ffi.CData
 
 FTS5_TOKENIZE_QUERY = 0x0001
 FTS5_TOKENIZE_PREFIX = 0x0002
@@ -91,12 +96,12 @@ struct Fts5ExtensionApi {
 ''')
 
 
-class FTS5Tokenizer(object):
+class FTS5Tokenizer:
     '''
     Tokenizer base class for FTS5.
     '''
 
-    def tokenize(self, text, flags=None):
+    def tokenize(self, text: str, flags: int=0) -> Iterable[Tuple[str, int, int]]:
         '''
         Tokenize given unicode text. Yields each tokenized token,
         start position(in bytes), end positon(in bytes).
@@ -113,18 +118,20 @@ class FTS3TokenizerAdaptor(FTS5Tokenizer):
     wrap a FTS3 tokenizer instance to adapt it to FTS5 Tokenizer interface
     '''
 
-    def __init__(self, fts3tokenizer):
+    def __init__(self, fts3tokenizer: FTS3Tokenizer) -> None:
         self.fts3tokenizer = fts3tokenizer
 
-    def tokenize(self, text, flags=None):
+    def tokenize(self, text: str, flags: int=0) -> Iterable[Tuple[str, int, int]]:
         return self.fts3tokenizer.tokenize(text)
 
 
-fts5_tokenizers = {}
+fts5_tokenizers: Dict[Any, Tuple[Any, Any, Any, Any]] = {}
+'''hold references to prevent GC'''
+registred_fts5_tokenizers: Dict[str, Tuple[Any, Any, Any]] = {}
 '''hold references to prevent GC'''
 
 
-def fts5_api_from_db(c):
+def fts5_api_from_db(c: 'Union[sqlite3.Connection, apsw.Connection]'):
     cur = c.cursor()
     try:
         cur.execute('SELECT sqlite_version()')
@@ -152,28 +159,33 @@ def fts5_api_from_db(c):
     return pRet
 
 
-def register_tokenizer(c, name, tokenizer, context=None, on_destroy=None):
+def register_tokenizer(c: 'Union[sqlite3.Connection, apsw.Connection]',
+                       name: str,
+                       tokenizer: FTS5TokenizerHandle,
+                       context: Any=None,
+                       on_destroy:Optional[Callable[[Any], None]]=None) -> bool:
     '''
     register a tokenizer to SQLite connection
     '''
     fts5api = fts5_api_from_db(c)
-    pContext = ffi.new_handle(context)
+    pContext = ffi.new_handle(context) if context is not None else ffi.NULL
     if on_destroy is None:
         xDestroy = ffi.NULL
     else:
 
         @ffi.callback('void(void*)')
-        def xDestroy(context):
+        def _xDestroy(context):
             on_destroy(ffi.from_handle(context))
+        xDestroy = _xDestroy
 
-    fts5_tokenizers[name] = (tokenizer, pContext, xDestroy)
     r = fts5api.xCreateTokenizer(fts5api,
                                  name.encode('utf-8'), pContext, tokenizer,
                                  xDestroy)
+    registred_fts5_tokenizers[name] = (tokenizer, pContext, xDestroy)
     return r == SQLITE_OK
 
 
-def make_fts5_tokenizer(tokenizer):
+def make_fts5_tokenizer(tokenizer: Union[FTS5Tokenizer, Callable[[], FTS5Tokenizer]]) -> FTS5TokenizerHandle:
     '''
     make a FTS5 tokenizer using given tokenizer.
     tokenizer can be an instance of Tokenizer or a Tokenizer class or
