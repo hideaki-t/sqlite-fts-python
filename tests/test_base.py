@@ -47,7 +47,8 @@ def test_make_tokenizer(c):
 
 def test_register_tokenizer(c, tokenizer_module):
     name = 'simpe'
-    fts.register_tokenizer(c, name, tokenizer_module)
+    v = fts.register_tokenizer(c, name, tokenizer_module)
+    assert len(v) == 1
     v = c.execute("SELECT FTS3_TOKENIZER(?)", (name, )).fetchone()[0]
     assert int(ffi.cast('intptr_t', tokenizer_module)) == \
         struct.unpack("P", v)[0]
