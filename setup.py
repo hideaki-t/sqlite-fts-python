@@ -1,9 +1,8 @@
-import sys
 from setuptools import setup
 
 setup(
     name="sqlitefts",
-    version="0.5.1",
+    version="0.6.0",
     packages=["sqlitefts"],
     description='A Python binding for tokenizers of SQLite Full Text Search',
     long_description=open('README.rst').read(),
@@ -12,8 +11,6 @@ setup(
         'Development Status :: 3 - Alpha', 'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
         'Operating System :: OS Independent',
-        'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
