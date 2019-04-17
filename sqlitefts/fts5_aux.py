@@ -70,7 +70,7 @@ def register_aux_function(con: 'Union[sqlite3.Connection, apsw.Connection]',
     else:
         h = destroy = ffi.NULL
 
-    fts5api.xCreateFunction(fts5api, name.encode('utf-8'), h, f, destroy)
-
-    if ref_ctrl:
+    r = fts5api.xCreateFunction(fts5api, name.encode('utf-8'), h, f, destroy)
+    if r == SQLITE_OK and ref_ctrl:
         _aux_funcs_holder[h] = (destroy, f)
+    return r
