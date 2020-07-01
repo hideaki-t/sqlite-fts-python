@@ -25,8 +25,7 @@ else:
     from ctypes.util import find_library
     dll = ffi.dlopen(find_library("sqlite3"))
 
-if hasattr(ctypes, 'pythonapi') and \
-   hasattr(ctypes.pythonapi, '_Py_PrintReferences'):
+if hasattr(sys, 'getobjects'):
     # for a python built with Py_TRACE_REFS
     ffi.cdef('''
 typedef struct sqlite3 sqlite3;
