@@ -6,12 +6,25 @@ import pytest
 apsw = pytest.importorskip('apsw')
 
 import sqlitefts as fts
+from sqlitefts import fts5, fts5_aux
 
 
 class SimpleTokenizer(fts.Tokenizer):
     _p = re.compile(r'\w+', re.UNICODE)
 
     def tokenize(self, text):
+        for m in self._p.finditer(text):
+            s, e = m.span()
+            t = text[s:e]
+            l = len(t.encode('utf-8'))
+            p = len(text[:s].encode('utf-8'))
+            yield t, p, p + l
+
+
+class SimpleFTS5Tokenizer(fts5.FTS5Tokenizer):
+    _p = re.compile(r'\w+', re.UNICODE)
+
+    def tokenize(self, text, flags):
         for m in self._p.finditer(text):
             s, e = m.span()
             t = text[s:e]
@@ -258,3 +271,31 @@ def test_tokenizer_output():
                 "SELECT token, start, end, position "
                 "FROM tok1 WHERE input=?", [s]), expect):
             assert e == a
+
+
+@pytest.mark.xfail(apsw.using_amalgamation,
+                   reason='FTS5 with APSW+Amalgamation not supported')
+def test_fts5_api_from_db():
+    with apsw.Connection(':memory:') as c:
+        fts5api = fts5.fts5_api_from_db(c)
+        assert fts5api.iVersion == 2
+        assert fts5api.xCreateTokenizer
+
+
+@pytest.mark.xfail(apsw.using_amalgamation,
+                   reason='FTS5 with APSW+Amalgamation not supported',
+                   raises=fts.Error)
+def test_aux_and_tokenize():
+    c = apsw.Connection(':memory:')
+    try:
+        fts5_aux.register_aux_function(c, 'tokenize', fts5_aux.aux_tokenize)
+        cur = c.cursor()
+        cur.execute('CREATE VIRTUAL TABLE fts USING FTS5(content)')
+        cur.executemany('INSERT INTO fts VALUES(?)',
+                        (['hello world'], ['こんにちは 世界']))
+        cur.execute('SELECT COUNT(*) FROM fts')
+        assert 2 == cur.fetchone()[0]
+        cur.execute('SELECT tokenize(fts, 0) FROM fts')
+        assert [x[0] for x in cur.fetchall()] == ['hello, world', 'こんにちは, 世界']
+    finally:
+        c.close()
