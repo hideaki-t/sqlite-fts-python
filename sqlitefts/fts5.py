@@ -5,6 +5,7 @@ support library to write SQLite FTS5 tokenizer
 import struct
 from typing import Callable, Any, Union, Optional, TYPE_CHECKING, Iterable, Tuple, Dict
 
+from .error import Error
 from .tokenizer import ffi, dll, get_db_from_connection, SQLITE_OK
 from .fts3 import Tokenizer as FTS3Tokenizer
 if TYPE_CHECKING:
@@ -132,6 +133,11 @@ registred_fts5_tokenizers: Dict[str, Tuple[Any, Any, Any]] = {}
 
 
 def fts5_api_from_db(c: 'Union[sqlite3.Connection, apsw.Connection]'):
+    if not hasattr(c, 'commit'):
+        # APSW doesn't have conn.commit/rollback
+        import apsw
+        if apsw.using_amalgamation:
+            raise Error('unable to get fts5_api')
     cur = c.cursor()
     try:
         cur.execute('SELECT sqlite_version()')
