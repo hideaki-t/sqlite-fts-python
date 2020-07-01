@@ -6,6 +6,10 @@ environment:
     SQLITE_WIN32_URL: https://www.sqlite.org/2018/sqlite-dll-win32-x86-3250100.zip
     SQLITE_WIN64_URL: https://www.sqlite.org/2018/sqlite-dll-win64-x64-3250100.zip
   matrix:
+    - PYTHON: C:\Python38-x64
+      ARCH: x64
+    - PYTHON: C:\Python38
+      ARCH: x86
     - PYTHON: C:\Python37
       ARCH: x86
     - PYTHON: C:\Python37-x64
@@ -14,18 +18,14 @@ environment:
       ARCH: x86
     - PYTHON: C:\Python36-x64
       ARCH: x64
-    - PYTHON: C:\Python35
-      ARCH: x86
-    - PYTHON: C:\Python35-x64
-      ARCH: x64
-    - PYTHON: C:\Python34
-      ARCH: x86
-    - PYTHON: C:\Python34-x64
-      ARCH: x64
-    - PYTHON: C:\Python27
-      ARCH: x86
-    - PYTHON: C:\Python27-x64
-      ARCH: x64
+    # - PYTHON: C:\Python35
+    #   ARCH: x86
+    # - PYTHON: C:\Python35-x64
+    #   ARCH: x64
+    # - PYTHON: C:\Python27
+    #   ARCH: x86
+    # - PYTHON: C:\Python27-x64
+    #   ARCH: x64
 
 init:
   - SET PATH=%PYTHON%;%PYTHON%\Scripts;%PATH%
