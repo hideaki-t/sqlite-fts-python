@@ -1,11 +1,12 @@
 # coding: utf-8
 from __future__ import print_function, unicode_literals
 
-import sqlitefts as fts
-
 import pytest
+
+import sqlitefts as fts
 from jajp_common import *  # noqa
-ts = pytest.importorskip('tinysegmenter')
+
+ts = pytest.importorskip("tinysegmenter")
 
 
 class TinySegmenterTokenizer(fts.Tokenizer):
@@ -17,15 +18,15 @@ class TinySegmenterTokenizer(fts.Tokenizer):
         for t in ts.tokenize(text):
             lt = len(t)
             np = p + text[p:].index(t)
-            start = len(text[:np].encode('utf-8')) + (lt - len(t.lstrip()))
+            start = len(text[:np].encode("utf-8")) + (lt - len(t.lstrip()))
             txt = t.strip()
-            yield txt, start, start + len(txt.encode('utf-8'))
+            yield txt, start, start + len(txt.encode("utf-8"))
             p = np + lt
 
 
 @pytest.fixture
 def name():
-    return 'tinysegmenter'
+    return "tinysegmenter"
 
 
 @pytest.fixture

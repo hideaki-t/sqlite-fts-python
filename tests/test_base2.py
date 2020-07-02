@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
 
-import sqlite3
 import re
+import sqlite3
 
 import pytest
 
@@ -11,8 +11,8 @@ import sqlitefts as fts
 
 class BaseTokenizer(fts.Tokenizer):
 
-    _spliter = re.compile(r'\s+|\S+')
-    _nonws = re.compile(r'\S+')
+    _spliter = re.compile(r"\s+|\S+")
+    _nonws = re.compile(r"\S+")
 
     def _normalize(self, token):
         return token
@@ -20,7 +20,7 @@ class BaseTokenizer(fts.Tokenizer):
     def _tokenize(self, text):
         pos = 0
         for t in self._spliter.findall(text):
-            byteLen = len(t.encode('utf-8'))
+            byteLen = len(t.encode("utf-8"))
             if self._nonws.match(t):
                 yield self._normalize(t), pos, pos + byteLen
             pos += byteLen
@@ -51,32 +51,31 @@ class OriginalDebugTokenizer(fts.Tokenizer):
             raise RuntimeError()
         self._limit -= 1
 
-        print(text, [w[0:-1] for w in text.split(' ')])
-        return (w[0:-1] for w in text.split(' '))
+        print(text, [w[0:-1] for w in text.split(" ")])
+        return (w[0:-1] for w in text.split(" "))
 
 
 @pytest.fixture
 def db():
-    name = 'test'
-    conn = sqlite3.connect(':memory:')
+    name = "test"
+    conn = sqlite3.connect(":memory:")
 
-    fts.register_tokenizer(conn, name,
-                           fts.make_tokenizer_module(DebugTokenizer()))
-    conn.execute('CREATE VIRTUAL TABLE fts USING FTS4(tokenize={})'.format(
-        name))
+    fts.register_tokenizer(conn, name, fts.make_tokenizer_module(DebugTokenizer()))
+    conn.execute("CREATE VIRTUAL TABLE fts USING FTS4(tokenize={})".format(name))
 
     return conn
 
 
 def testZeroLengthToken(db):
-    result = db.executemany('INSERT INTO fts VALUES(?)',
-                            [('Make things I', ), (u'Some σ φχικλψ', )])
+    result = db.executemany(
+        "INSERT INTO fts VALUES(?)", [("Make things I",), (u"Some σ φχικλψ",)]
+    )
     assert 2 == result.rowcount
 
 
 def testInfiniteRecursion(db):
-    contents = [('abc def', ), ('abc xyz', )]
-    result = db.executemany('INSERT INTO fts VALUES(?)', contents)
+    contents = [("abc def",), ("abc xyz",)]
+    result = db.executemany("INSERT INTO fts VALUES(?)", contents)
     assert 2 == result.rowcount
 
     result = db.execute("SELECT * FROM fts WHERE fts MATCH 'abc'").fetchall()

@@ -1,13 +1,15 @@
 # coding: utf-8
 from __future__ import print_function, unicode_literals
+
 import sys
+
+import pytest
 
 import sqlitefts as fts
 
-import pytest
 if sys.version_info < (3, 3) or sys.version_info >= (3, 4):
     from jajp_common import *  # noqa
-igo = pytest.importorskip('igo')
+igo = pytest.importorskip("igo")
 
 
 class IgoTokenizer(fts.Tokenizer):
@@ -16,13 +18,13 @@ class IgoTokenizer(fts.Tokenizer):
 
     def tokenize(self, text):
         for m in self.tagger.parse(text):
-            start = len(text[:m.start].encode('utf-8'))
-            yield m.surface, start, start + len(m.surface.encode('utf-8'))
+            start = len(text[: m.start].encode("utf-8"))
+            yield m.surface, start, start + len(m.surface.encode("utf-8"))
 
 
 @pytest.fixture
 def name():
-    return 'igo'
+    return "igo"
 
 
 @pytest.fixture

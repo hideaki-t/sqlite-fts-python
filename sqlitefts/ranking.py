@@ -1,18 +1,17 @@
 # -*- coding: utf-8 -*-
-'''
+"""
 Ranking code based on:
   https://github.com/coleifer/peewee/blob/master/playhouse/sqlite_ext.py
-'''
+"""
 
-
-import struct
 import math
+import struct
 
 
 def _parse_match_info(buf):
     # See http://sqlite.org/fts3.html#matchinfo
     bufsize = len(buf)  # Length in bytes.
-    return [struct.unpack('@I', buf[i:i+4])[0] for i in range(0, bufsize, 4)]
+    return [struct.unpack("@I", buf[i : i + 4])[0] for i in range(0, bufsize, 4)]
 
 
 # Ranking implementation, which parse matchinfo.
@@ -38,11 +37,12 @@ def rank(raw_match_info, *weights):
                 continue
 
             col_idx = phrase_info_idx + (col_num * 3)
-            x1, x2 = match_info[col_idx:col_idx + 2]
+            x1, x2 = match_info[col_idx : col_idx + 2]
             if x1 > 0:
                 score += weight * (float(x1) / x2)
 
     return -score
+
 
 simple = rank
 
@@ -93,10 +93,9 @@ def bm25(raw_match_info, *args):
             docs_with_term = float(match_info[x + 2])
 
             idf = max(
-                math.log(
-                    (total_docs - docs_with_term + 0.5) /
-                    (docs_with_term + 0.5)),
-                0)
+                math.log((total_docs - docs_with_term + 0.5) / (docs_with_term + 0.5)),
+                0,
+            )
             denom = term_frequency + (K * D)
             if denom == 0:
                 rhs = 0

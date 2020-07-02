@@ -1,12 +1,12 @@
 # coding: utf-8
-'''
+"""
 support library to write SQLite FTS3 tokenizer
-'''
+"""
 import struct
 import warnings
-from typing import Iterator, Tuple, Union, List, Any, TYPE_CHECKING
-from .tokenizer import (ffi, dll, get_db_from_connection, SQLITE_OK,
-                        SQLITE_DONE)
+from typing import TYPE_CHECKING, Any, Iterator, List, Tuple, Union
+
+from .tokenizer import SQLITE_DONE, SQLITE_OK, dll, ffi, get_db_from_connection
 
 if TYPE_CHECKING:
     import sqlite3
@@ -15,7 +15,8 @@ TokenizerModule = Any  # should be ffi.CData
 
 SQLITE_DBCONFIG_ENABLE_FTS3_TOKENIZER = 1004
 
-ffi.cdef('''
+ffi.cdef(
+    """
 int sqlite3_db_config(sqlite3 *, int op, ...);
 
 typedef struct sqlite3_tokenizer_module sqlite3_tokenizer_module;
@@ -44,60 +45,60 @@ struct sqlite3_tokenizer_cursor {
   size_t pos;
   size_t offset;
 };
-''')
+"""
+)
 
 
 class Tokenizer(object):
-    '''
+    """
     Tokenizer base class.
-    '''
+    """
 
     def tokenize(self, text: str) -> Iterator[Tuple[str, int, int]]:
-        '''
+        """
         Tokenize given unicode text. Yields each tokenized token,
         start position(in bytes), end positon(in bytes)
-        '''
-        yield text, 0, len(text.encode('utf-8'))
+        """
+        yield text, 0, len(text.encode("utf-8"))
 
 
 tokenizer_modules = {}
-'''hold references to prevent GC'''
+"""hold references to prevent GC"""
 
 
 def make_tokenizer_module(tokenizer: Tokenizer) -> TokenizerModule:
-    '''tokenizer module'''
+    """tokenizer module"""
     tokenizers = {}
     cursors = {}
 
-    @ffi.callback('int(int, const char *const*, sqlite3_tokenizer **)')
+    @ffi.callback("int(int, const char *const*, sqlite3_tokenizer **)")
     def xcreate(argc, argv, ppTokenizer):
-        if hasattr(tokenizer, '__call__'):
-            args = [ffi.string(x).decode('utf-8') for x in argv[0:argc]]
+        if hasattr(tokenizer, "__call__"):
+            args = [ffi.string(x).decode("utf-8") for x in argv[0:argc]]
             tk = tokenizer(args)
         else:
             tk = tokenizer
         th = ffi.new_handle(tk)
-        tkn = ffi.new('sqlite3_tokenizer *')
+        tkn = ffi.new("sqlite3_tokenizer *")
         tkn.t = th
         tokenizers[tkn] = th
         ppTokenizer[0] = tkn
         return SQLITE_OK
 
-    @ffi.callback('int(sqlite3_tokenizer *)')
+    @ffi.callback("int(sqlite3_tokenizer *)")
     def xdestroy(pTokenizer):
         tkn = pTokenizer
         del tokenizers[tkn]
         return SQLITE_OK
 
     @ffi.callback(
-        'int(sqlite3_tokenizer*, const char *, int, sqlite3_tokenizer_cursor **)'
+        "int(sqlite3_tokenizer*, const char *, int, sqlite3_tokenizer_cursor **)"
     )
     def xopen(pTokenizer, pInput, nInput, ppCursor):
-        cur = ffi.new('sqlite3_tokenizer_cursor *')
+        cur = ffi.new("sqlite3_tokenizer_cursor *")
         tokenizer = ffi.from_handle(pTokenizer.t)
-        i = ffi.string(pInput).decode('utf-8')
-        tokens = [(n.encode('utf-8'), b, e)
-                  for n, b, e in tokenizer.tokenize(i) if n]
+        i = ffi.string(pInput).decode("utf-8")
+        tokens = [(n.encode("utf-8"), b, e) for n, b, e in tokenizer.tokenize(i) if n]
         tknh = ffi.new_handle(iter(tokens))
         cur.pTokenizer = pTokenizer
         cur.tokens = tknh
@@ -108,10 +109,9 @@ def make_tokenizer_module(tokenizer: Tokenizer) -> TokenizerModule:
         return SQLITE_OK
 
     @ffi.callback(
-        'int(sqlite3_tokenizer_cursor*, const char **, int *, int *, int *, int *)'
+        "int(sqlite3_tokenizer_cursor*, const char **, int *, int *, int *, int *)"
     )
-    def xnext(pCursor, ppToken, pnBytes, piStartOffset, piEndOffset,
-              piPosition):
+    def xnext(pCursor, ppToken, pnBytes, piStartOffset, piEndOffset, piPosition):
         try:
             cur = pCursor[0]
             tokens = ffi.from_handle(cur.tokens)
@@ -127,45 +127,54 @@ def make_tokenizer_module(tokenizer: Tokenizer) -> TokenizerModule:
             return SQLITE_DONE
         return SQLITE_OK
 
-    @ffi.callback('int(sqlite3_tokenizer_cursor *)')
+    @ffi.callback("int(sqlite3_tokenizer_cursor *)")
     def xclose(pCursor):
         tk = ffi.from_handle(pCursor.pTokenizer.t)
-        on_close = getattr(tk, 'on_close', None)
-        if on_close and hasattr(on_close, '__call__'):
+        on_close = getattr(tk, "on_close", None)
+        if on_close and hasattr(on_close, "__call__"):
             on_close()
 
         del cursors[pCursor]
         return SQLITE_OK
 
-    tokenizer_module = ffi.new('sqlite3_tokenizer_module*',
-                               [0, xcreate, xdestroy, xopen, xclose, xnext])
-    tokenizer_modules[tokenizer] = (tokenizer_module, xcreate, xdestroy, xopen,
-                                    xclose, xnext)
+    tokenizer_module = ffi.new(
+        "sqlite3_tokenizer_module*", [0, xcreate, xdestroy, xopen, xclose, xnext]
+    )
+    tokenizer_modules[tokenizer] = (
+        tokenizer_module,
+        xcreate,
+        xdestroy,
+        xopen,
+        xclose,
+        xnext,
+    )
     return tokenizer_module
 
 
-def enable_fts3_tokenizer(c: 'Union[sqlite3.Connection, apsw.Connection]') -> bool:
+def enable_fts3_tokenizer(c: "Union[sqlite3.Connection, apsw.Connection]") -> bool:
     db = get_db_from_connection(c)
-    rc = dll.sqlite3_db_config(db, SQLITE_DBCONFIG_ENABLE_FTS3_TOKENIZER,
-                               ffi.cast('int', 1), ffi.NULL)
+    rc = dll.sqlite3_db_config(
+        db, SQLITE_DBCONFIG_ENABLE_FTS3_TOKENIZER, ffi.cast("int", 1), ffi.NULL
+    )
     return rc == SQLITE_OK
 
 
-def register_tokenizer(conn: 'Union[sqlite3.Connection, apsw.Connection]',
-                       name: str,
-                       tokenizer_module: TokenizerModule) -> List[Any]:
-    '''register tokenizer module with SQLite connection.'''
-    module_addr = int(ffi.cast('uintptr_t', tokenizer_module))
-    address_blob = struct.pack('P', module_addr)
+def register_tokenizer(
+    conn: "Union[sqlite3.Connection, apsw.Connection]",
+    name: str,
+    tokenizer_module: TokenizerModule,
+) -> List[Any]:
+    """register tokenizer module with SQLite connection."""
+    module_addr = int(ffi.cast("uintptr_t", tokenizer_module))
+    address_blob = struct.pack("P", module_addr)
     if not enable_fts3_tokenizer(conn):
-        warnings.warn('enabling 2-arg fts3_tokenizer failed.', RuntimeWarning)
+        warnings.warn("enabling 2-arg fts3_tokenizer failed.", RuntimeWarning)
     cur = conn.cursor()
     try:
-        r = cur.execute('SELECT fts3_tokenizer(?, ?)',
-                        (name, address_blob)).fetchall()
+        r = cur.execute("SELECT fts3_tokenizer(?, ?)", (name, address_blob)).fetchall()
     finally:
         cur.close()
     return r
 
 
-__all__ = ['Tokenizer', 'make_tokenizer_module', 'register_tokenizer']
+__all__ = ["Tokenizer", "make_tokenizer_module", "register_tokenizer"]
