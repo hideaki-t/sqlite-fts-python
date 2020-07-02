@@ -6,8 +6,8 @@ import pytest
 import sqlitefts as fts
 from jajp_common import *  # noqa
 
-ts = pytest.importorskip("tinysegmenter")
-
+tinysegmenter = pytest.importorskip("tinysegmenter")
+ts = tinysegmenter.TinySegmenter()
 
 class TinySegmenterTokenizer(fts.Tokenizer):
     def __init__(self, path=None):
