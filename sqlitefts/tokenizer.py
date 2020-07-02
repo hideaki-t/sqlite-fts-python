@@ -61,3 +61,6 @@ def get_db_from_connection(
     else:
         db = ffi.cast("PyObject *", id(c)).db
     return db
+
+
+__all__ = ["get_db_from_connection", "SQLITE_OK", "SQLITE_DONE"]

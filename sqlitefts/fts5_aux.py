@@ -80,3 +80,6 @@ def register_aux_function(
     if r == SQLITE_OK and ref_ctrl:
         _aux_funcs_holder[h] = (destroy, f)
     return r
+
+
+__all__ = ["register_aux_function", "aux_tokenize"]
