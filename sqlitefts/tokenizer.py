@@ -18,6 +18,8 @@ SQLITE_DONE = 101
 ffi = FFI()
 
 if sys.platform == "win32":
+    import sqlite3  # noqa
+
     dll = ffi.dlopen("sqlite3.dll")
 else:
     from ctypes.util import find_library
