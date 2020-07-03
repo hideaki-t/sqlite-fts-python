@@ -18,14 +18,14 @@ environment:
       ARCH: x86
     - PYTHON: C:\Python36-x64
       ARCH: x64
-    # - PYTHON: C:\Python35
-    #   ARCH: x86
-    # - PYTHON: C:\Python35-x64
-    #   ARCH: x64
-    # - PYTHON: C:\Python27
-    #   ARCH: x86
-    # - PYTHON: C:\Python27-x64
-    #   ARCH: x64
+    - PYTHON: C:\Python35
+      ARCH: x86
+    - PYTHON: C:\Python35-x64
+      ARCH: x64
+    - PYTHON: C:\Python27
+      ARCH: x86
+    - PYTHON: C:\Python27-x64
+      ARCH: x64
 
 init:
   - SET PATH=%PYTHON%;%PYTHON%\Scripts;%PATH%
