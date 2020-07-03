@@ -1,15 +1,9 @@
-from typing import TYPE_CHECKING, Any, Callable, Dict, Tuple, Union
-
 from .fts5 import dll, ffi, fts5_api_from_db
 from .tokenizer import SQLITE_OK
 
-if TYPE_CHECKING:
-    import sqlite3
-    import apsw  # type: ignore
-
 SQLITE_TRANSIENT = ffi.cast("void(*)(void*)", -1)
 
-_aux_funcs_holder: Dict[Any, Tuple[Any, Callable]] = {}
+_aux_funcs_holder = {}
 """holding references of aux funcs to prevent GC"""
 
 
@@ -52,12 +46,7 @@ def aux_tokenize(pApi, pFts, pCtx, nVal, apVal):
         dll.sqlite3_result_error_code(pCtx, rc)
 
 
-def register_aux_function(
-    con: "Union[sqlite3.Connection, apsw.Connection]",
-    name: str,
-    f: Callable,
-    ref_ctrl: bool = True,
-) -> int:
+def register_aux_function(con, name, f, ref_ctrl=True):
     """register a FTS5 auxiliary function to given connection.
 
     ref_ctrl can be set to False safely only if the given function

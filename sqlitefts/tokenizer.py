@@ -3,14 +3,8 @@
 a proof of concept implementation of SQLite FTS tokenizers in Python
 """
 import sys
-from typing import TYPE_CHECKING, Any, Union
 
 from cffi import FFI  # type: ignore
-
-if TYPE_CHECKING:
-    import sqlite3
-    import apsw  # type: ignore
-SQLITE3DBHandle = Any  # ffi.CData
 
 SQLITE_OK = 0
 SQLITE_DONE = 101
@@ -53,9 +47,7 @@ typedef struct {
     )
 
 
-def get_db_from_connection(
-    c: "Union[sqlite3.Connection, apsw.Connection]",
-) -> SQLITE3DBHandle:
+def get_db_from_connection(c):
     db = getattr(c, "_db", None)
     if db:
         # pypy's SQLite3 connection has _db using cffi
