@@ -157,7 +157,7 @@ def enable_fts3_tokenizer(c):
 def register_tokenizer(conn, name, tokenizer_module):
     """register tokenizer module with SQLite connection."""
     module_addr = int(ffi.cast("uintptr_t", tokenizer_module))
-    address_blob = struct.pack("P", module_addr)
+    address_blob = sqlite3.Binary(struct.pack("P", module_addr))
     if not enable_fts3_tokenizer(conn):
         warnings.warn("enabling 2-arg fts3_tokenizer failed.", RuntimeWarning)
     cur = conn.cursor()
