@@ -27,5 +27,5 @@ setup(
     license="MIT",
     keywords=["SQLite", "Full-text search", "FTS"],
     install_requires=["cffi"],
-    package_data={"sqlitefts": ["py.typed"]},
+    package_data={"sqlitefts": ["py.typed", "*.pyi"]},
 )
