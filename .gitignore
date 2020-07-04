@@ -1,7 +1,8 @@
 .tox/
 build/
 dist/
-env/
+.venv/
 sqlitefts.egg-info/
 *.pyc
 *.py~
+.*cache/

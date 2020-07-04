@@ -1,3 +1,3 @@
 class Error(Exception):
-    def __init__(self, message: str) -> None:
+    def __init__(self, message):
         super().__init__(message)

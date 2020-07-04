@@ -18,14 +18,14 @@ environment:
       ARCH: x86
     - PYTHON: C:\Python36-x64
       ARCH: x64
-    # - PYTHON: C:\Python35
-    #   ARCH: x86
-    # - PYTHON: C:\Python35-x64
-    #   ARCH: x64
-    # - PYTHON: C:\Python27
-    #   ARCH: x86
-    # - PYTHON: C:\Python27-x64
-    #   ARCH: x64
+    - PYTHON: C:\Python35
+      ARCH: x86
+    - PYTHON: C:\Python35-x64
+      ARCH: x64
+    - PYTHON: C:\Python27
+      ARCH: x86
+    - PYTHON: C:\Python27-x64
+      ARCH: x64
 
 init:
   - SET PATH=%PYTHON%;%PYTHON%\Scripts;%PATH%
@@ -41,7 +41,7 @@ install:
   - copy /Y %PYTHON%\DLLs\_sqlite3.pyd %TEMP%\DLLs
   - copy /Y sqlite3.dll %TEMP%\DLLs
   - python -m pip install -U pip
-  - python -m pip install "pytest!=3.0.0" faker igo-python janome tinysegmenter3
+  - python -m pip install "pytest!=3.0.0" faker igo-python janome tinysegmenter
   - python -m pip install -e .
 
 build: false
