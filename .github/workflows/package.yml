@@ -24,6 +24,10 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install tox tox-gh-actions
     - name: Install native deps (Linux)
       if: runner.os == 'Linux'
       run: |
@@ -32,15 +36,12 @@ jobs:
       if: runner.os == 'Windows'
       shell: bash
       run: |
+        pip install pathlib
         curl -fsSL -o sqlite_dll.zip https://www.sqlite.org/2018/sqlite-dll-win64-x64-3250100.zip
         7z x sqlite_dll.zip sqlite3.dll
         mkdir -p temp/DLLs
         cp $(python -c "import sys, pathlib; print([x for x in map(pathlib.Path, sys.path) if x.name == 'DLLs'][0]/'_sqlite3.pyd')") temp/DLLs 
         cp sqlite3.dll temp/DLLs
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        python -m pip install tox tox-gh-actions
     - name: Test with tox
       run: |
         tox
