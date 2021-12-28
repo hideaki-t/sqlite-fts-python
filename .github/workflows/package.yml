@@ -49,3 +49,4 @@ jobs:
         PLATFORM: ${{ matrix.platform }}
         PYTHONPATH: temp/DLLs
         PYTHONIOENCODING: utf-8
+        LANG: en_US.UTF-8
