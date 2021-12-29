@@ -28,6 +28,7 @@ void sqlite3_result_error(sqlite3_context*, const char*, int);
 const unsigned char *sqlite3_value_text(sqlite3_value*);
 int sqlite3_value_int(sqlite3_value*);
 int sqlite3_prepare_v2(sqlite3*, const char*, int, sqlite3_stmt**, const char**);
+int sqlite3_prepare(sqlite3*, const char*, int, sqlite3_stmt**, const char**);
 int sqlite3_bind_pointer(sqlite3_stmt*, int, void*, const char*, void(*)(void*));
 int sqlite3_step(sqlite3_stmt*);
 int sqlite3_finalize(sqlite3_stmt*);
@@ -153,7 +154,7 @@ def fts5_api_from_db(c):
             db = get_db_from_connection(c)
             pRet = ffi.new("fts5_api**")
             pStmt = ffi.new("sqlite3_stmt**")
-            rc = dll.sqlite3_prepare_v2(db, b"SELECT fts5(?1)", -1, pStmt, ffi.NULL)
+            rc = dll.sqlite3_prepare(db, b"SELECT fts5(?1)", -1, pStmt, ffi.NULL)
             if rc == SQLITE_OK:
                 r = dll.sqlite3_bind_pointer(pStmt[0], 1, pRet, FTS5_API_PTR, ffi.NULL)
                 if r != SQLITE_OK or dll.sqlite3_step(pStmt[0]) != SQLITE_ROW:
