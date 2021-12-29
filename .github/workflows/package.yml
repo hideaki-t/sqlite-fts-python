@@ -52,4 +52,4 @@ jobs:
         python -m pip install -U pip
         pip install pytest faker igo-python "janome<0.4" tinysegmenter
         pip install -e .
-        pytest -svra
+        python -m pytest -svra tests
