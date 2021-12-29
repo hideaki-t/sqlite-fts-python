@@ -33,15 +33,6 @@ jobs:
       if: runner.os == 'Linux'
       run: |
         sudo apt install -y mecab libmecab-dev mecab-ipadic-utf8
-    - name: Install native deps (Windows)
-      if: runner.os == 'Windows'
-      shell: bash
-      run: |
-        curl -fsSL -o sqlite_dll.zip https://www.sqlite.org/2018/sqlite-dll-win64-x64-3250100.zip
-        7z x sqlite_dll.zip sqlite3.dll
-        mkdir -p temp/DLLs
-        cp -v $(python -c "import sys, pathlib; print([x for x in map(pathlib.Path, sys.path) if x.name == 'DLLs'][0]/'_sqlite3.pyd')") temp/DLLs 
-        cp -v sqlite3.dll temp/DLLs
     - name: Test with tox
       run: tox
       env:
