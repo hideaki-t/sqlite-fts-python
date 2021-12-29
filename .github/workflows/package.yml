@@ -54,7 +54,6 @@ jobs:
     - name: Test with pytest (macOS)
       if: runner.os == 'macOS'
       run: |
-        python -c 'import sqlite3; sqlite3.connect(":memory:").execute("select fts5()")'
         python -m pip install -U pip
         pip install pytest faker igo-python "janome<0.4" tinysegmenter
         pip install -e .
