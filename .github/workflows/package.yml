@@ -34,7 +34,7 @@ jobs:
       run: |
         sudo apt install -y mecab libmecab-dev mecab-ipadic-utf8
     - name: Install native deps (Windows)
-      if: runner.os == 'Windows' && matrix.python-version == "2.7"
+      if: runner.os == 'Windows' && matrix.python-version == '2.7'
       shell: bash
       run: |
         curl -fsSL -o sqlite_dll.zip https://www.sqlite.org/2021/sqlite-dll-win64-x64-3370000.zip
