@@ -44,7 +44,9 @@ jobs:
         cp -v $(python -c "import sys, pathlib; print([x for x in map(pathlib.Path, sys.path) if x.name == 'DLLs'][0]/'_sqlite3.pyd')") temp/DLLs 
         cp -v sqlite3.dll temp/DLLs
     - name: Test with tox
-      run: tox
+      run: |
+        python -c 'import sys, sqlite3; print(sqlite3.version, sqlite3.sqlite_version)'
+        tox
       env:
         PYTHONPATH: temp/DLLs
         PYTHONIOENCODING: utf-8
