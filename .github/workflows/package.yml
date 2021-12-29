@@ -49,5 +49,7 @@ jobs:
       run: |
         python -c 'import sys, sqlite3; print(sqlite3.version, sqlite3.sqlite_version)'
         python -c "import sqlite3; sqlite3.connect(':memory:').execute('select fts3_tokenizer()')"
+        python -m pip install -U pip
         pip install pytest faker igo-python "janome<0.4" tinysegmenter
+        pip install -e .
         pytest -svra
