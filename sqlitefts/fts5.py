@@ -155,6 +155,8 @@ def fts5_api_from_db(c):
                     pRet = None
                 else:
                     pRet = pRet[0]
+            else:
+                raise Error("unable to get fts5_api(new). rc={}".format(rc))
             dll.sqlite3_finalize(pStmt[0])
     finally:
         cur.close()
