@@ -48,7 +48,7 @@ jobs:
         python -c "import sqlite3; sqlite3.connect(':memory:').execute('select fts3_tokenizer()')"
         tox
     - name: Test with pytest
-      if: runner.os == 'Windows' && matrix.python-version == '2.7'
+      if: runner.os == 'macOS' || (runner.os == 'Windows' && matrix.python-version == '2.7')
       run: |
         python -m pip install -U pip
         pip install pytest faker igo-python "janome<0.4" tinysegmenter
