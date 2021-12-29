@@ -40,13 +40,10 @@ jobs:
         pip install pathlib
         curl -fsSL -o sqlite_dll.zip https://www.sqlite.org/2021/sqlite-dll-win64-x64-3370000.zip
         7z x sqlite_dll.zip sqlite3.dll
-        mkdir -p temp/DLLs
-        cp -v $(python -c "import sys, pathlib; print([x for x in map(pathlib.Path, sys.path) if x.name == 'DLLs'][0]/'_sqlite3.pyd')") temp/DLLs 
-        cp -v sqlite3.dll temp/DLLs
+        cp -v $(python -c "import sys, pathlib; print([x for x in map(pathlib.Path, sys.path) if x.name == 'DLLs'][0]/'_sqlite3.pyd')") . 
     - name: Test with tox
       run: |
         python -c 'import sys, sqlite3; print(sqlite3.version, sqlite3.sqlite_version)'
         tox
       env:
-        PYTHONPATH: temp/DLLs
         PYTHONIOENCODING: utf-8
