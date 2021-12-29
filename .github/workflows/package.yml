@@ -42,13 +42,16 @@ jobs:
         7z x sqlite_dll.zip sqlite3.dll
         cp -v $(python -c "import sys, pathlib; print([x for x in map(pathlib.Path, sys.path) if x.name == 'DLLs'][0]/'_sqlite3.pyd')") . 
     - name: Test with tox
-      if: runner.os != 'Windows' || matrix.python-version != '2.7'
-      run: |
-        python -c 'import sys, sqlite3; print(sqlite3.version, sqlite3.sqlite_version)'
-        python -c "import sqlite3; sqlite3.connect(':memory:').execute('select fts3_tokenizer()')"
-        tox
+      if: runner.os == 'Linux' || (runner.os == 'Windows' && matrix.python-version != '2.7')
+      run: tox
     - name: Test with pytest
-      if: runner.os == 'macOS' || (runner.os == 'Windows' && matrix.python-version == '2.7')
+      if: runner.os == 'Windows' && matrix.python-version == '2.7'
+      run: |
+        python -m pip install -U pip
+        pip install pytest faker igo-python "janome<0.4" tinysegmenter
+        pip install -e .
+        python -m pytest -svra tests
+      if: runner.os == 'macOS'
       run: |
         python -m pip install -U pip
         pip install pytest faker igo-python "janome<0.4" tinysegmenter
