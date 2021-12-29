@@ -139,6 +139,7 @@ def fts5_api_from_db(c):
     try:
         cur.execute("SELECT sqlite_version()")
         ver = tuple(int(x) for x in cur.fetchone()[0].split("."))
+        print(ver)
         if ver < (3, 20, 0):
             cur.execute("SELECT fts5()")
             blob = cur.fetchone()[0]
@@ -165,6 +166,7 @@ def register_tokenizer(c, name, tokenizer, context=None, on_destroy=None):
     register a tokenizer to SQLite connection
     """
     fts5api = fts5_api_from_db(c)
+    print(fts5api, dir(fts5api))
     pContext = ffi.new_handle(context) if context is not None else ffi.NULL
     if on_destroy is None:
         xDestroy = ffi.NULL
