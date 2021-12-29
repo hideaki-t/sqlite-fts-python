@@ -44,6 +44,7 @@ jobs:
     - name: Test with tox
       run: |
         python -c 'import sys, sqlite3; print(sqlite3.version, sqlite3.sqlite_version)'
+        python -c 'import sqlite3; sqlite3.connect(":memory:").execute("select fts3_tokenizer()")'
         tox
       env:
         PYTHONIOENCODING: utf-8
