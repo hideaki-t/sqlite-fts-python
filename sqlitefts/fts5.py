@@ -161,7 +161,7 @@ def fts5_api_from_db(c):
                 else:
                     pRet = pRet[0]
             else:
-                print(ffi.string(sqlite3_errmsg(db)).decode("utf-8"))
+                print(ffi.string(dll.sqlite3_errmsg(db)).decode("utf-8"))
                 raise Error("unable to get fts5_api(new). rc={}".format(rc))
             dll.sqlite3_finalize(pStmt[0])
     finally:
