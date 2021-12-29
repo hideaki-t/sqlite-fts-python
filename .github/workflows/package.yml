@@ -16,7 +16,7 @@ jobs:
       fail-fast: false
       matrix:
         platform: [ubuntu-latest, macos-latest, windows-latest]
-        python-version: ["2.x", "3.5", "3.6", "3.7", "3.8", "3.9", "3.10", "pypy-2.7", "pypy-3.8"]
+        python-version: ["3.7", "3.8", "3.9", "3.10", "pypy-3.8"]
 
     steps:
     - uses: actions/checkout@v2
@@ -36,7 +36,6 @@ jobs:
       if: runner.os == 'Windows'
       shell: bash
       run: |
-        pip install pathlib
         curl -fsSL -o sqlite_dll.zip https://www.sqlite.org/2018/sqlite-dll-win64-x64-3250100.zip
         7z x sqlite_dll.zip sqlite3.dll
         mkdir -p temp/DLLs
@@ -49,4 +48,3 @@ jobs:
         PLATFORM: ${{ matrix.platform }}
         PYTHONPATH: temp/DLLs
         PYTHONIOENCODING: utf-8
-        LANG: en_US.UTF-8
