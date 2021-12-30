@@ -26,12 +26,11 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        python -m pip install tox tox-gh-actions
     - name: Install native deps (Linux)
       if: runner.os == 'Linux'
       run: |
         sudo apt install -y mecab libmecab-dev mecab-ipadic-utf8
-    - name: Install native deps (Windows) # for older versions
+    - name: Test with pytest (Windows & Py27/35)
       if: runner.os == 'Windows' && (matrix.python-version == '2.7' || matrix.python-version == '3.5')
       shell: bash
       run: |
@@ -39,16 +38,14 @@ jobs:
         curl -fsSL -o sqlite_dll.zip https://www.sqlite.org/2021/sqlite-dll-win64-x64-3370000.zip
         7z x sqlite_dll.zip sqlite3.dll
         cp -v $(python -c "import sys, pathlib; print([x for x in map(pathlib.Path, sys.path) if x.name == 'DLLs'][0]/'_sqlite3.pyd')") . 
-    - name: Test with tox
-      if: runner.os == 'Linux' || (runner.os == 'Windows' && matrix.python-version != '2.7')
-      run: tox
-    - name: Test with pytest
-      if: runner.os == 'Windows' && matrix.python-version == '2.7'
-      run: |
-        python -m pip install -U pip
         pip install pytest faker igo-python "janome<0.4" tinysegmenter
         pip install -e .
         python -m pytest -svra tests
+    - name: Test with tox
+      if: runner.os == 'Linux' || (runner.os == 'Windows' && matrix.python-version != '2.7')
+      run: |
+        python -m pip install tox tox-gh-actions
+        tox
     - name: Test with pytest (macOS)
       if: runner.os == 'macOS' && (matrix.python-version == 'pypy-2.7' || matrix.python.version == 'pypy-3.8')
       run: |
@@ -56,7 +53,6 @@ jobs:
         curl -s https://sqlite.org/2021/sqlite-autoconf-3370000.tar.gz | tar zxpf -
         cd sqlite-autoconf-3370000 && CPPFLAGS="-DSQLITE_ENABLE_FTS3 -DSQLITE_ENABLE_FTS3_PARENTHESIS" ./configure --enable-debug && make && cd ..
         # env DYLD_PRINT_LIBRARIES=1 DYLD_LIBRARY_PATH=$PWD/sqlite-autoconf-3370000/.libs python -vc 'import sqlite3; print(sqlite3.connect(":memory:").execute("PRAGMA compile_options").fetchall())'
-        python -m pip install -U pip
         pip install pytest faker igo-python "janome<0.4" tinysegmenter
         pip install -e .
         env DYLD_LIBRARY_PATH=$PWD/sqlite-autoconf-3370000/.libs python -m pytest -svra tests
