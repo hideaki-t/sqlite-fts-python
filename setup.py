@@ -2,13 +2,13 @@ from setuptools import setup
 
 setup(
     name="sqlitefts",
-    version="0.6.0",
+    version="1.0.0",
     packages=["sqlitefts"],
     description="A Python binding for tokenizers of SQLite Full Text Search",
     long_description=open("README.rst").read(),
     url="https://github.com/hideaki-t/sqlite-fts-python/",
     classifiers=[
-        "Development Status :: 3 - Alpha",
+        "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
@@ -17,6 +17,8 @@ setup(
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: Implementation :: PyPy",
         "Programming Language :: Python :: Implementation :: CPython",
         "Topic :: Database",
