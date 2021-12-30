@@ -55,8 +55,13 @@ jobs:
     - name: Test with pytest (macOS)
       if: runner.os == 'macOS'
       run: |
-        python -c 'import sqlite3; print(sqlite3.connect(":memory:").execute("PRAGMA compile_options").fetchall())'
+        python -vc 'import sqlite3; print(sqlite3.connect(":memory:").execute("PRAGMA compile_options").fetchall())'
         python -m pip install -U pip
         pip install pytest faker igo-python "janome<0.4" tinysegmenter
         pip install -e .
         python -m pytest -svra tests
+      env:
+        DYLD_PRINT_LIBRARIES: "1"
+        DYLD_PRINT_LIBRARIES_POST_LAUNCH: "1"
+        DYLD_PRINT_RPATHS: "1"
+
