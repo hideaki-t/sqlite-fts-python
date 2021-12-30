@@ -46,13 +46,16 @@ jobs:
       run: |
         python -m pip install tox tox-gh-actions
         tox
-    - name: Test with pytest (macOS)
-      if: runner.os == 'macOS' && (matrix.python-version == 'pypy-2.7' || matrix.python.version == 'pypy-3.8')
+    - name: Install native deps (macOS)
+      if: runner.os == 'macOS' && (matrix.python-version != 'pypy-2.7' || matrix.python.version != 'pypy-3.8')
       run: |
-        # it seems brew installed SQLite doesn't work somehow
+        # it seems brew installed SQLite doesn't work with CPython somehow
         curl -s https://sqlite.org/2021/sqlite-autoconf-3370000.tar.gz | tar zxpf -
         cd sqlite-autoconf-3370000 && CPPFLAGS="-DSQLITE_ENABLE_FTS3 -DSQLITE_ENABLE_FTS3_PARENTHESIS" ./configure --enable-debug && make && cd ..
         # env DYLD_PRINT_LIBRARIES=1 DYLD_LIBRARY_PATH=$PWD/sqlite-autoconf-3370000/.libs python -vc 'import sqlite3; print(sqlite3.connect(":memory:").execute("PRAGMA compile_options").fetchall())'
+    - name: Test with pytest (macOS)
+      if: runner.os == 'macOS'
+      run: |
         pip install pytest faker igo-python "janome<0.4" tinysegmenter
         pip install -e .
         env DYLD_LIBRARY_PATH=$PWD/sqlite-autoconf-3370000/.libs python -m pytest -svra tests
