@@ -145,7 +145,6 @@ def fts5_api_from_db(c):
     try:
         cur.execute("SELECT sqlite_version()")
         ver = tuple(int(x) for x in cur.fetchone()[0].split("."))
-        print(ver)
         if ver < (3, 20, 0):
             cur.execute("SELECT fts5()")
             blob = cur.fetchone()[0]
@@ -154,7 +153,7 @@ def fts5_api_from_db(c):
             db = get_db_from_connection(c)
             pRet = ffi.new("fts5_api**")
             pStmt = ffi.new("sqlite3_stmt**")
-            rc = dll.sqlite3_prepare(db, b"SELECT fts5(?1)", -1, pStmt, ffi.NULL)
+            rc = dll.sqlite3_prepare_v2(db, b"SELECT fts5(?1)", -1, pStmt, ffi.NULL)
             if rc == SQLITE_OK:
                 r = dll.sqlite3_bind_pointer(pStmt[0], 1, pRet, FTS5_API_PTR, ffi.NULL)
                 if r != SQLITE_OK or dll.sqlite3_step(pStmt[0]) != SQLITE_ROW:
@@ -162,8 +161,11 @@ def fts5_api_from_db(c):
                 else:
                     pRet = pRet[0]
             else:
-                print(ffi.string(dll.sqlite3_errmsg(db)).decode("utf-8"))
-                raise Error("unable to get fts5_api(new). rc={}".format(rc))
+                raise Error(
+                    "unable to get fts5_api(new). rc={}/{}".format(
+                        rc, ffi.string(dll.sqlite3_errmsg(db)).decode("utf-8")
+                    )
+                )
             dll.sqlite3_finalize(pStmt[0])
     finally:
         cur.close()
@@ -175,7 +177,6 @@ def register_tokenizer(c, name, tokenizer, context=None, on_destroy=None):
     register a tokenizer to SQLite connection
     """
     fts5api = fts5_api_from_db(c)
-    print(fts5api, dir(fts5api))
     pContext = ffi.new_handle(context) if context is not None else ffi.NULL
     if on_destroy is None:
         xDestroy = ffi.NULL
