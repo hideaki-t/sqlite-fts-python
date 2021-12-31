@@ -1,5 +1,4 @@
-|travisci build status|_
-|appveyor build status|_
+|build status|_
 
 sqlitefts-python
 ================
@@ -64,9 +63,9 @@ FTS5::
 Requirements
 ============
 
- * Python 2.7, Python 3.3+, and PyPy2.7, PyPy3.2+
+ * Python 2.7, Python 3.5+, and PyPy2.7, PyPy3.7+ (older versions may work, but not tested)
  * CFFI_
- * FTS3/4 and/or FTS5 enabled SQLite3 or APSW_ (for Windows, you may need to download and replace sqlite3.dll)
+ * FTS3/4 and/or FTS5 enabled SQLite3 or APSW_ (OS/Python bundled SQLite3 shared library may not work, building sqlite3 from source or pre-compiled binary may be required)
 
    * SQLite 3.11.x have to be compiled with -DSQLITE_ENABLE_FTS3_TOKENIZER to enable 2-arg fts3_tokenizer
    * SQLite 3.10.2 and older versions do not have extra requirements. 2-arg fts3_tokenizer is always avaiable.
@@ -95,9 +94,7 @@ Thanks
 .. _peewee: https://github.com/coleifer/peewee
 .. _CFFI: https://cffi.readthedocs.io/en/latest/
 .. _ctypes: https://docs.python.org/library/ctypes.html
-.. |travisci build status| image:: https://api.travis-ci.org/hideaki-t/sqlite-fts-python.svg?branch=master
-.. _travisci build status: https://travis-ci.org/hideaki-t/sqlite-fts-python
-.. |appveyor build status| image:: https://ci.appveyor.com/api/projects/status/github/hideaki-t/sqlite-fts-python?svg=true
-.. _appveyor build status: https://ci.appveyor.com/project/hideaki-t/sqlite-fts-python
+.. |build status| image:: https://github.com/hideaki-t/sqlite-fts-python/actions/workflows/package.yml/badge.svg
+.. _build status: https://github.com/hideaki-t/sqlite-fts-python/actions/workflows/package.yml
 .. _APSW: https://github.com/rogerbinns/apsw
 .. _GH-14: https://github.com/hideaki-t/sqlite-fts-python/issues/14
