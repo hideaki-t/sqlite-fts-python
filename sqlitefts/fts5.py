@@ -28,9 +28,15 @@ void sqlite3_result_error(sqlite3_context*, const char*, int);
 const unsigned char *sqlite3_value_text(sqlite3_value*);
 int sqlite3_value_int(sqlite3_value*);
 int sqlite3_prepare_v2(sqlite3*, const char*, int, sqlite3_stmt**, const char**);
+int sqlite3_prepare(sqlite3*, const char*, int, sqlite3_stmt**, const char**);
 int sqlite3_bind_pointer(sqlite3_stmt*, int, void*, const char*, void(*)(void*));
 int sqlite3_step(sqlite3_stmt*);
 int sqlite3_finalize(sqlite3_stmt*);
+int sqlite3_errcode(sqlite3 *db);
+int sqlite3_extended_errcode(sqlite3 *db);
+const char *sqlite3_errmsg(sqlite3*);
+const void *sqlite3_errmsg16(sqlite3*);
+const char *sqlite3_errstr(int);
 
 typedef struct fts5_api fts5_api;
 typedef struct fts5_tokenizer fts5_tokenizer;
@@ -154,6 +160,12 @@ def fts5_api_from_db(c):
                     pRet = None
                 else:
                     pRet = pRet[0]
+            else:
+                raise Error(
+                    "unable to get fts5_api(new). rc={}/{}".format(
+                        rc, ffi.string(dll.sqlite3_errmsg(db)).decode("utf-8")
+                    )
+                )
             dll.sqlite3_finalize(pStmt[0])
     finally:
         cur.close()

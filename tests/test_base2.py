@@ -42,25 +42,12 @@ class DebugTokenizer(BaseTokenizer):
         return token[0:-1]
 
 
-class OriginalDebugTokenizer(fts.Tokenizer):
-
-    _limit = 16
-
-    def tokenize(self, text):
-        if not self._limit:
-            raise RuntimeError()
-        self._limit -= 1
-
-        print(text, [w[0:-1] for w in text.split(" ")])
-        return (w[0:-1] for w in text.split(" "))
-
-
 @pytest.fixture
 def db():
     name = "test"
     conn = sqlite3.connect(":memory:")
 
-    fts.register_tokenizer(conn, name, fts.make_tokenizer_module(DebugTokenizer()))
+    fts.register_tokenizer(conn, name, fts.make_tokenizer_module(BaseTokenizer()))
     conn.execute("CREATE VIRTUAL TABLE fts USING FTS4(tokenize={})".format(name))
 
     return conn
