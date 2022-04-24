@@ -35,9 +35,9 @@ jobs:
       shell: bash
       run: |
         pip install pathlib
-        curl -fsSL -o sqlite_dll.zip https://www.sqlite.org/2021/sqlite-dll-win64-x64-3370000.zip
+        curl -fsSL -o sqlite_dll.zip https://www.sqlite.org/2022/sqlite-dll-win64-x64-3380200.zip
         7z x sqlite_dll.zip sqlite3.dll
-        cp -v $(python -c "import sys, pathlib; print([x for x in map(pathlib.Path, sys.path) if x.name == 'DLLs'][0]/'_sqlite3.pyd')") . 
+        cp -v $(python -c "import sys, pathlib; print([x for x in map(pathlib.Path, sys.path) if x.name == 'DLLs'][0]/'_sqlite3.pyd')") .
         pip install pytest faker igo-python "janome<0.4" tinysegmenter
         pip install -e .
         python -m pytest -svra tests
@@ -50,13 +50,13 @@ jobs:
       if: runner.os == 'macOS' && (matrix.python-version != 'pypy-2.7' || matrix.python.version != 'pypy-3.9')
       run: |
         # it seems brew installed SQLite doesn't work with CPython somehow
-        curl -s https://sqlite.org/2021/sqlite-autoconf-3370000.tar.gz | tar zxpf -
-        cd sqlite-autoconf-3370000 && CPPFLAGS="-DSQLITE_ENABLE_FTS3 -DSQLITE_ENABLE_FTS3_PARENTHESIS" ./configure --enable-debug && make && cd ..
+        curl -s https://www.sqlite.org/2022/sqlite-autoconf-3380200.tar.gz | tar zxpf -
+        cd sqlite-autoconf-3380200 && CPPFLAGS="-DSQLITE_ENABLE_FTS3 -DSQLITE_ENABLE_FTS3_PARENTHESIS" ./configure --enable-debug && make && cd ..
         # env DYLD_PRINT_LIBRARIES=1 DYLD_LIBRARY_PATH=$PWD/sqlite-autoconf-3370000/.libs python -vc 'import sqlite3; print(sqlite3.connect(":memory:").execute("PRAGMA compile_options").fetchall())'
     - name: Test with pytest (macOS)
       if: runner.os == 'macOS'
       run: |
         pip install pytest faker igo-python "janome<0.4" tinysegmenter
         pip install -e .
-        env DYLD_LIBRARY_PATH=$PWD/sqlite-autoconf-3370000/.libs python -m pytest -svra tests
+        env DYLD_LIBRARY_PATH=$PWD/sqlite-autoconf-3380200/.libs python -m pytest -svra tests
 
