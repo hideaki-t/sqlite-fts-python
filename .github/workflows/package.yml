@@ -16,7 +16,7 @@ jobs:
       fail-fast: false
       matrix:
         platform: [ubuntu-latest, macos-latest, windows-latest]
-        python-version: ["2.7", "3.5", "3.6", "3.7", "3.8", "3.9", "3.10", "pypy-2.7", "pypy-3.8"]
+        python-version: ["2.7", "3.5", "3.6", "3.7", "3.8", "3.9", "3.10", "pypy-2.7", "pypy-3.9"]
     steps:
     - uses: actions/checkout@v3
     - name: Set up Python ${{ matrix.python-version }}
@@ -47,7 +47,7 @@ jobs:
         python -m pip install tox tox-gh-actions
         tox
     - name: Install native deps (macOS)
-      if: runner.os == 'macOS' && (matrix.python-version != 'pypy-2.7' || matrix.python.version != 'pypy-3.8')
+      if: runner.os == 'macOS' && (matrix.python-version != 'pypy-2.7' || matrix.python.version != 'pypy-3.9')
       run: |
         # it seems brew installed SQLite doesn't work with CPython somehow
         curl -s https://sqlite.org/2021/sqlite-autoconf-3370000.tar.gz | tar zxpf -
