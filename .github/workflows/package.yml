@@ -32,7 +32,7 @@ jobs:
     - name: Test with pytest (macOS) 1
       if: runner.os == 'macOS'
       run: |
-        python -c 'sqlite3.connect(':memory:').execute('select sqlite_version()').fetchone()'
+        python -c "sqlite3.connect(':memory:').execute('select sqlite_version()').fetchone()"
         env DYLD_PRINT_LIBRARIES=1 DYLD_LIBRARY_PATH=$PWD/sqlite-autoconf-3370000/.libs python -vc 'import sqlite3; print(sqlite3.connect(":memory:").execute("PRAGMA compile_options").fetchall())'
         pip install pytest faker igo-python "janome<0.4" tinysegmenter
         pip install -e .
@@ -40,7 +40,7 @@ jobs:
     - name: Test with pytest (macOS) 2
       if: runner.os == 'macOS'
       run: |
-        python -c 'sqlite3.connect(':memory:').execute('select sqlite_version()').fetchone()'
+        python -c "sqlite3.connect(':memory:').execute('select sqlite_version()').fetchone()"
         python -vc 'import sqlite3; print(sqlite3.connect(":memory:").execute("PRAGMA compile_options").fetchall())'
         pip install pytest faker igo-python "janome<0.4" tinysegmenter
         pip install -e .
