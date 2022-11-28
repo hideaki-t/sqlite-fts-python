@@ -29,16 +29,17 @@ jobs:
         # it seems brew installed SQLite doesn't work with CPython somehow
         curl -s https://www.sqlite.org/2021/sqlite-autoconf-3370000.tar.gz | tar zxpf -
         cd sqlite-autoconf-3370000 && CPPFLAGS="-DSQLITE_ENABLE_FTS3 -DSQLITE_ENABLE_FTS3_PARENTHESIS" ./configure --enable-fts5 --enable-debug && make && cd ..
-        env DYLD_PRINT_LIBRARIES=1 DYLD_LIBRARY_PATH=$PWD/sqlite-autoconf-3370000/.libs python -vc 'import sqlite3; print(sqlite3.connect(":memory:").execute("PRAGMA compile_options").fetchall())'
     - name: Test with pytest (macOS) 1
       if: runner.os == 'macOS'
       run: |
+        env DYLD_PRINT_LIBRARIES=1 DYLD_LIBRARY_PATH=$PWD/sqlite-autoconf-3370000/.libs python -vc 'import sqlite3; print(sqlite3.connect(":memory:").execute("PRAGMA compile_options").fetchall())'
         pip install pytest faker igo-python "janome<0.4" tinysegmenter
         pip install -e .
         env DYLD_LIBRARY_PATH=$PWD/sqlite-autoconf-3370000/.libs python -m pytest -svra tests
     - name: Test with pytest (macOS) 2
       if: runner.os == 'macOS'
       run: |
+        python -vc 'import sqlite3; print(sqlite3.connect(":memory:").execute("PRAGMA compile_options").fetchall())'
         pip install pytest faker igo-python "janome<0.4" tinysegmenter
         pip install -e .
         python -m pytest -svra tests
