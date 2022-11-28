@@ -13,7 +13,7 @@ jobs:
       fail-fast: false
       matrix:
         platform: [macos-latest]
-        python-version: ["3.10", "3.11"]
+        python-version: ["3.10"]
     steps:
     - uses: actions/checkout@v3
     - name: Set up Python ${{ matrix.python-version }}
@@ -28,7 +28,7 @@ jobs:
       run: |
         # it seems brew installed SQLite doesn't work with CPython somehow
         curl -s https://www.sqlite.org/2021/sqlite-autoconf-3370000.tar.gz | tar zxpf -
-        cd sqlite-autoconf-3370000 && CPPFLAGS="-DSQLITE_ENABLE_FTS3 -DSQLITE_ENABLE_FTS3_PARENTHESIS" ./configure --enable-debug && make && cd ..
+        cd sqlite-autoconf-3370000 && CPPFLAGS="-DSQLITE_ENABLE_FTS3 -DSQLITE_ENABLE_FTS3_PARENTHESIS" ./configure --enable-fts5 --enable-debug && make && cd ..
         env DYLD_PRINT_LIBRARIES=1 DYLD_LIBRARY_PATH=$PWD/sqlite-autoconf-3370000/.libs python -vc 'import sqlite3; print(sqlite3.connect(":memory:").execute("PRAGMA compile_options").fetchall())'
     - name: Test with pytest (macOS) 1
       if: runner.os == 'macOS'
