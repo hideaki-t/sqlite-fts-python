@@ -45,6 +45,13 @@ typedef struct {
 } PyObject;
 """
     )
+ffi.cdef(
+    """
+int sqlite3_initialize(void);
+"""
+)
+
+assert dll.sqlite3_initialize() == SQLITE_OK
 
 
 def get_db_from_connection(c):
