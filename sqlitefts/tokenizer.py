@@ -18,7 +18,13 @@ if sys.platform == "win32":
 else:
     from ctypes.util import find_library
 
-    dll = ffi.dlopen(find_library("sqlite3"))
+    try:
+        # try to use _sqlite3.so first
+        import _sqlite3  # noqa
+
+        dll = ffi.dlopen(_sqlite3.__file__)
+    except:
+        dll = ffi.dlopen(find_library("sqlite3"))
 
 if hasattr(sys, "getobjects"):
     # for a python built with Py_TRACE_REFS
