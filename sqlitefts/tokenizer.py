@@ -2,17 +2,22 @@
 """
 a proof of concept implementation of SQLite FTS tokenizers in Python
 """
+from __future__ import annotations
+
+import sqlite3
 import sys
 from ctypes.util import find_library
 from importlib import import_module
+from typing import Any
 
 from _cffi_backend import Lib as cffi_lib
-from cffi import FFI  # type: ignore
+from cffi import FFI
 
 from .error import Error
 
 SQLITE_OK = 0
 SQLITE_DONE = 101
+SQLITE_ERROR = 1
 
 ffi = FFI()
 ffi.cdef("int sqlite3_libversion_number(void);")
@@ -75,12 +80,12 @@ else:
         return dll
 
 
-def get_db_from_connection(c):
-    db = getattr(c, "_db", None)
-    if db:
+def get_db_from_connection(c: sqlite3.Connection) -> tuple[Any, cffi_lib]:
+    _db = getattr(c, "_db", None)
+    if _db:
         # pypy's SQLite3 connection has _db using cffi
-        return ffi.cast("sqlite3*", db), _get_dll("_sqlite3_cffi")
-    return ffi.cast("PyObject *", id(c)).db, _get_dll("_sqlite3")
+        return ffi.cast("sqlite3*", _db), _get_dll("_sqlite3_cffi")
+    return ffi.cast("PyObject *", id(c)).db, _get_dll("_sqlite3")  # type: ignore
 
 
-__all__ = ["SQLITE_OK", "SQLITE_DONE"]
+__all__ = ["SQLITE_OK", "SQLITE_DONE", "SQLITE_ERROR", "ffi"]
