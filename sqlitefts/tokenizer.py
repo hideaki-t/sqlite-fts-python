@@ -8,6 +8,8 @@ from importlib import import_module
 
 from cffi import FFI  # type: ignore
 
+from .error import Error
+
 SQLITE_OK = 0
 SQLITE_DONE = 101
 
@@ -41,29 +43,35 @@ typedef struct {
 
 _mod_cache = {}
 
+if sys.platform == "win32":
 
-def _get_dll(name):
-    try:
-        if name != None:
-            f = import_module(name).__file__
-        else:
-            f = None
-    except:  # noqa
-        # python2 ImportError, Python 3 ModuleNotFoundError
-        f = None
-    f = find_library("sqlite3")
-    if not f:
-        raise Exception("unable to find SQLite shared object")
-    dll = _mod_cache.get(f)
-    if not dll:
-        dll = ffi.dlopen(f)
+    def _get_dll(_):
+        import sqlite3  # noqa
+
+        dll = _mod_cache.get("sqlite3.dll")
+        if not dll:
+            _mod_cache["sqlite3.dll"] = dll = ffi.dlopen("sqlite3.dll")
+        return dll
+
+else:
+
+    def _get_dll(name):
         try:
-            dll.sqlite3_libversion_number()
-        except AttributeError:
-            # likely APSW
-            dll = _get_dll(None)
-        _mod_cache[f] = dll
-    return dll
+            f = import_module(name).__file__
+        except ModuleNotFoundError:
+            f = find_library("sqlite3")
+        if not f:
+            raise Exception("unable to find SQLite shared object")
+        dll = _mod_cache.get(f)
+        if not dll:
+            dll = ffi.dlopen(f)
+            try:
+                dll.sqlite3_libversion_number()  # type: ignore
+            except AttributeError as exc:
+                raise Error(f"{f} does not expose SQLite API") from exc
+
+            _mod_cache[f] = dll
+        return dll
 
 
 def get_db_from_connection(c):
