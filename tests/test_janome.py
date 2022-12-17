@@ -2,9 +2,9 @@
 from __future__ import print_function, unicode_literals
 
 import pytest
-
-import sqlitefts as fts
 from jajp_common import *  # noqa
+
+import sqlitefts.fts3 as fts
 
 janome = pytest.importorskip("janome.tokenizer")
 

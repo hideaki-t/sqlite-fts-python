@@ -2,12 +2,13 @@
 from __future__ import print_function, unicode_literals
 
 import pytest
-
-import sqlitefts as fts
 from jajp_common import *  # noqa
+
+import sqlitefts.fts3 as fts
 
 tinysegmenter = pytest.importorskip("tinysegmenter")
 ts = tinysegmenter.TinySegmenter()
+
 
 class TinySegmenterTokenizer(fts.Tokenizer):
     def __init__(self, path=None):

@@ -5,7 +5,7 @@ import sys
 
 import pytest
 
-import sqlitefts as fts
+import sqlitefts.fts3 as fts
 
 if sys.version_info < (3, 3) or sys.version_info >= (3, 4):
     from jajp_common import *  # noqa

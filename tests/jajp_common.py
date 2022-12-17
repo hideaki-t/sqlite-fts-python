@@ -3,7 +3,7 @@ from __future__ import print_function, unicode_literals
 
 import sqlite3
 
-import sqlitefts as fts
+import sqlitefts.fts3 as fts
 
 
 def test_createtable(name, t):

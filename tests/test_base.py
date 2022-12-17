@@ -8,7 +8,7 @@ import struct
 import pytest
 from cffi import FFI
 
-import sqlitefts as fts
+import sqlitefts.fts3 as fts
 
 ffi = FFI()
 

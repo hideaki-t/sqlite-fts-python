@@ -6,7 +6,7 @@ import sqlite3
 
 import pytest
 
-import sqlitefts as fts
+import sqlitefts.fts3 as fts
 from sqlitefts import ranking
 
 

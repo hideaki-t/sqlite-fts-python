@@ -7,7 +7,7 @@ import tempfile
 import pytest
 from faker import Factory
 
-import sqlitefts as fts
+import sqlitefts.fts3 as fts
 from sqlitefts import fts5
 
 igo = pytest.importorskip("igo")

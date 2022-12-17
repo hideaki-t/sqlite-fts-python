@@ -5,7 +5,7 @@ import re
 
 import pytest
 
-import sqlitefts as fts
+import sqlitefts.fts3 as fts
 from sqlitefts import fts5, fts5_aux
 
 apsw = pytest.importorskip("apsw")

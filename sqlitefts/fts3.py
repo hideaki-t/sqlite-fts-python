@@ -6,6 +6,7 @@ import sqlite3
 import struct
 import warnings
 
+from .error import Error
 from .tokenizer import SQLITE_DONE, SQLITE_OK, ffi, get_db_from_connection
 
 SQLITE_DBCONFIG_ENABLE_FTS3_TOKENIZER = 1004
@@ -168,4 +169,4 @@ def register_tokenizer(conn, name, tokenizer_module):
     return r
 
 
-__all__ = ["Tokenizer", "make_tokenizer_module", "register_tokenizer"]
+__all__ = ["Tokenizer", "make_tokenizer_module", "register_tokenizer", "Error"]

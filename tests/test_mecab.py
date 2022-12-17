@@ -4,9 +4,9 @@ from __future__ import print_function
 import sys
 
 import pytest
-
-import sqlitefts as fts
 from jajp_common import *  # noqa
+
+import sqlitefts.fts3 as fts
 
 mecab = pytest.importorskip("MeCab")
 
