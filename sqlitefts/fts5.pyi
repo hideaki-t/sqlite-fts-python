@@ -1,8 +1,6 @@
 import sqlite3
 from typing import Any, Callable, Iterable, Optional, Tuple, Union
 
-import apsw  # type: ignore
-
 from .fts3 import Tokenizer as FTS3Tokenizer
 
 FTS5TokenizerHandle = Any
@@ -25,7 +23,7 @@ class FTS3TokenizerAdaptor(FTS5Tokenizer):
     ) -> Iterable[Tuple[str, int, int]]: ...
 
 def register_tokenizer(
-    c: Union[sqlite3.Connection, apsw.Connection],
+    c: sqlite3.Connection,
     name: str,
     tokenizer: FTS5TokenizerHandle,
     context: Any = ...,

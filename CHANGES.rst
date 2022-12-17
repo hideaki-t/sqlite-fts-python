@@ -1,5 +1,6 @@
 2.0.0
    * some breaking changes in internal APIs for more flexibility
+   * drop APSW support. now APSW provides wheel with sqlite amalgamation - no SQLite API exposed
    * TODO: drop 2.7, 3.5, 3.6
    * TODO: inline type hint
    * TODO: stabilize interface for FTS5 auxiliary functions

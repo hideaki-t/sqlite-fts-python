@@ -1,11 +1,9 @@
 import sqlite3
-from typing import Any, Callable, Union
-
-import apsw  # type: ignore
+from typing import Any, Callable
 
 def aux_tokenize(pApi: Any, pFts: Any, pCtx: Any, nVal: Any, apVal: Any): ...
 def register_aux_function(
-    con: Union[sqlite3.Connection, apsw.Connection],
+    con: sqlite3.Connection,
     name: str,
     f: Callable,
     ref_ctrl: bool = ...,

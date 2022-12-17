@@ -1,7 +1,5 @@
 import sqlite3
-from typing import Any, Iterator, List, Tuple, Union
-
-import apsw  # type: ignore
+from typing import Any, Iterator, List, Tuple
 
 TokenizerModule = Any
 
@@ -10,7 +8,7 @@ class Tokenizer:
 
 def make_tokenizer_module(tokenizer: Tokenizer) -> TokenizerModule: ...
 def register_tokenizer(
-    conn: Union[sqlite3.Connection, apsw.Connection],
+    conn: sqlite3.Connection,
     name: str,
     tokenizer_module: TokenizerModule,
 ) -> List[Any]: ...

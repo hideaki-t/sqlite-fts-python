@@ -71,9 +71,6 @@ def get_db_from_connection(c):
     if db:
         # pypy's SQLite3 connection has _db using cffi
         return ffi.cast("sqlite3*", db), _get_dll("_sqlite3_cffi")
-    p = getattr(c, "sqlite3pointer", None)
-    if p:
-        return ffi.cast("sqlite3*", p()), _get_dll("apsw")
     return ffi.cast("PyObject *", id(c)).db, _get_dll("_sqlite3")
 
 
