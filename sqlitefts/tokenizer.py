@@ -12,7 +12,7 @@ SQLITE_OK = 0
 SQLITE_DONE = 101
 
 ffi = FFI()
-
+ffi.cdef("int sqlite3_libversion_number(void);")
 if hasattr(sys, "getobjects"):
     # for a python built with Py_TRACE_REFS
     ffi.cdef(
@@ -39,21 +39,29 @@ typedef struct {
 """
     )
 
-
 _mod_cache = {}
 
 
 def _get_dll(name):
     try:
-        f = import_module(name).__file__
+        if name != None:
+            f = import_module(name).__file__
+        else:
+            f = None
     except:  # noqa
         # python2 ImportError, Python 3 ModuleNotFoundError
-        f = find_library("sqlite3")
+        f = None
+    f = find_library("sqlite3")
     if not f:
         raise Exception("unable to find SQLite shared object")
     dll = _mod_cache.get(f)
     if not dll:
         dll = ffi.dlopen(f)
+        try:
+            dll.sqlite3_libversion_number()
+        except AttributeError:
+            # likely APSW
+            dll = _get_dll(None)
         _mod_cache[f] = dll
     return dll
 
