@@ -6,6 +6,7 @@ import sys
 from ctypes.util import find_library
 from importlib import import_module
 
+from _cffi_backend import Lib as cffi_lib
 from cffi import FFI  # type: ignore
 
 from .error import Error
@@ -41,7 +42,7 @@ typedef struct {
 """
     )
 
-_mod_cache = {}
+_mod_cache: dict[str, cffi_lib] = {}
 
 if sys.platform == "win32":
 
@@ -55,7 +56,7 @@ if sys.platform == "win32":
 
 else:
 
-    def _get_dll(name):
+    def _get_dll(name: str) -> cffi_lib:
         try:
             f = import_module(name).__file__
         except ModuleNotFoundError:
