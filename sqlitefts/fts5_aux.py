@@ -1,4 +1,4 @@
-from .fts5 import dll, ffi, fts5_api_from_db
+from .fts5 import ffi, fts5_api_from_db
 from .tokenizer import SQLITE_OK
 
 SQLITE_TRANSIENT = ffi.cast("void(*)(void*)", -1)
@@ -7,12 +7,19 @@ _aux_funcs_holder = {}
 """holding references of aux funcs to prevent GC"""
 
 
-@ffi.callback(
-    "void(const Fts5ExtensionApi*, Fts5Context*,"
-    "sqlite3_context*, int, sqlite3_value**)"
-)
-def aux_tokenize(pApi, pFts, pCtx, nVal, apVal):
-    """ FTS5 AUX function to tokenize a column.
+def aux_tokenize_wrap(dll, func):
+    @ffi.callback(
+        "void(const Fts5ExtensionApi*, Fts5Context*,"
+        "sqlite3_context*, int, sqlite3_value**)"
+    )
+    def _(pApi, pFts, pCtx, nVal, apVal):
+        func(dll, pApi, pFts, pCtx, nVal, apVal)
+
+    return _
+
+
+def aux_tokenize(dll, pApi, pFts, pCtx, nVal, apVal):
+    """FTS5 AUX function to tokenize a column.
 
     this function is a callback function, thus it should not be called directly
     """
@@ -53,7 +60,7 @@ def register_aux_function(con, name, f, ref_ctrl=True):
     has a valid lifetime.
     If ref_ctrl is True, the connection must be closed explicitly.
     """
-    fts5api = fts5_api_from_db(con)
+    fts5api, dll = fts5_api_from_db(con)
 
     if ref_ctrl:
 
@@ -65,6 +72,7 @@ def register_aux_function(con, name, f, ref_ctrl=True):
     else:
         h = destroy = ffi.NULL
 
+    f = aux_tokenize_wrap(dll, f)
     r = fts5api.xCreateFunction(fts5api, name.encode("utf-8"), h, f, destroy)
     if r == SQLITE_OK and ref_ctrl:
         _aux_funcs_holder[h] = (destroy, f)

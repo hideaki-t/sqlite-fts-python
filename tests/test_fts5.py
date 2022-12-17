@@ -38,7 +38,7 @@ def tm():
 
 
 def test_fts5_api_from_db(c):
-    fts5api = fts5.fts5_api_from_db(c)
+    fts5api, _ = fts5.fts5_api_from_db(c)
     assert fts5api.iVersion == 2
     assert fts5api.xCreateTokenizer
     c.close()

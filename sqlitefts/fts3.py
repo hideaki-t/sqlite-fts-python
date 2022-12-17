@@ -6,7 +6,7 @@ import sqlite3
 import struct
 import warnings
 
-from .tokenizer import SQLITE_DONE, SQLITE_OK, dll, ffi, get_db_from_connection
+from .tokenizer import SQLITE_DONE, SQLITE_OK, ffi, get_db_from_connection
 
 SQLITE_DBCONFIG_ENABLE_FTS3_TOKENIZER = 1004
 
@@ -147,7 +147,7 @@ def make_tokenizer_module(tokenizer):
 
 
 def enable_fts3_tokenizer(c):
-    db = get_db_from_connection(c)
+    db, dll = get_db_from_connection(c)
     rc = dll.sqlite3_db_config(
         db, SQLITE_DBCONFIG_ENABLE_FTS3_TOKENIZER, ffi.cast("int", 1), ffi.NULL
     )

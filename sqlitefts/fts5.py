@@ -5,7 +5,7 @@ support library to write SQLite FTS5 tokenizer
 import struct
 
 from .error import Error
-from .tokenizer import SQLITE_OK, dll, ffi, get_db_from_connection
+from .tokenizer import SQLITE_OK, ffi, get_db_from_connection
 
 FTS5_TOKENIZE_QUERY = 0x0001
 FTS5_TOKENIZE_PREFIX = 0x0002
@@ -135,12 +135,6 @@ registred_fts5_tokenizers = {}
 
 
 def fts5_api_from_db(c):
-    if not hasattr(c, "commit"):
-        # APSW doesn't have conn.commit/rollback
-        import apsw
-
-        if apsw.using_amalgamation:
-            raise Error("unable to get fts5_api")
     cur = c.cursor()
     try:
         cur.execute("SELECT sqlite_version()")
@@ -150,7 +144,7 @@ def fts5_api_from_db(c):
             blob = cur.fetchone()[0]
             pRet = ffi.cast("fts5_api*", struct.unpack("P", blob)[0])
         else:
-            db = get_db_from_connection(c)
+            db, dll = get_db_from_connection(c)
             pRet = ffi.new("fts5_api**")
             pStmt = ffi.new("sqlite3_stmt**")
             rc = dll.sqlite3_prepare_v2(db, b"SELECT fts5(?1)", -1, pStmt, ffi.NULL)
@@ -169,14 +163,14 @@ def fts5_api_from_db(c):
             dll.sqlite3_finalize(pStmt[0])
     finally:
         cur.close()
-    return pRet
+    return pRet, dll
 
 
 def register_tokenizer(c, name, tokenizer, context=None, on_destroy=None):
     """
     register a tokenizer to SQLite connection
     """
-    fts5api = fts5_api_from_db(c)
+    fts5api, _ = fts5_api_from_db(c)
     pContext = ffi.new_handle(context) if context is not None else ffi.NULL
     if on_destroy is None:
         xDestroy = ffi.NULL

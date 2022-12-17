@@ -3,6 +3,8 @@
 a proof of concept implementation of SQLite FTS tokenizers in Python
 """
 import sys
+from ctypes.util import find_library
+from importlib import import_module
 
 from cffi import FFI  # type: ignore
 
@@ -10,21 +12,6 @@ SQLITE_OK = 0
 SQLITE_DONE = 101
 
 ffi = FFI()
-
-if sys.platform == "win32":
-    import sqlite3  # noqa
-
-    dll = ffi.dlopen("sqlite3.dll")
-else:
-    from ctypes.util import find_library
-
-    try:
-        # try to use _sqlite3.so first
-        import _sqlite3  # noqa
-
-        dll = ffi.dlopen(_sqlite3.__file__)
-    except:
-        dll = ffi.dlopen(find_library("sqlite3"))
 
 if hasattr(sys, "getobjects"):
     # for a python built with Py_TRACE_REFS
@@ -53,14 +40,33 @@ typedef struct {
     )
 
 
+_mod_cache = {}
+
+
+def _get_dll(name):
+    try:
+        f = import_module(name).__file__
+    except:  # noqa
+        # python2 ImportError, Python 3 ModuleNotFoundError
+        f = find_library("sqlite3")
+    if not f:
+        raise Exception("unable to find SQLite shared object")
+    dll = _mod_cache.get(f)
+    if not dll:
+        dll = ffi.dlopen(f)
+        _mod_cache[f] = dll
+    return dll
+
+
 def get_db_from_connection(c):
     db = getattr(c, "_db", None)
     if db:
         # pypy's SQLite3 connection has _db using cffi
-        db = ffi.cast("sqlite3*", db)
-    else:
-        db = ffi.cast("PyObject *", id(c)).db
-    return db
+        return ffi.cast("sqlite3*", db), _get_dll("_sqlite3_cffi")
+    p = getattr(c, "sqlite3pointer", None)
+    if p:
+        return ffi.cast("sqlite3*", p()), _get_dll("apsw")
+    return ffi.cast("PyObject *", id(c)).db, _get_dll("_sqlite3")
 
 
-__all__ = ["get_db_from_connection", "SQLITE_OK", "SQLITE_DONE"]
+__all__ = ["SQLITE_OK", "SQLITE_DONE"]
