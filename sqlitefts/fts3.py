@@ -4,16 +4,13 @@ support library to write SQLite FTS3 tokenizer
 """
 import sqlite3
 import struct
-import warnings
 
-from .tokenizer import SQLITE_DONE, SQLITE_OK, dll, ffi, get_db_from_connection
+from .tokenizer import SQLITE_DONE, SQLITE_OK, ffi
 
 SQLITE_DBCONFIG_ENABLE_FTS3_TOKENIZER = 1004
 
 ffi.cdef(
     """
-int sqlite3_db_config(sqlite3 *, int op, ...);
-
 typedef struct sqlite3_tokenizer_module sqlite3_tokenizer_module;
 typedef struct sqlite3_tokenizer sqlite3_tokenizer;
 typedef struct sqlite3_tokenizer_cursor sqlite3_tokenizer_cursor;
@@ -146,20 +143,10 @@ def make_tokenizer_module(tokenizer):
     return tokenizer_module
 
 
-def enable_fts3_tokenizer(c):
-    db = get_db_from_connection(c)
-    rc = dll.sqlite3_db_config(
-        db, SQLITE_DBCONFIG_ENABLE_FTS3_TOKENIZER, ffi.cast("int", 1), ffi.NULL
-    )
-    return rc == SQLITE_OK
-
-
 def register_tokenizer(conn, name, tokenizer_module):
     """register tokenizer module with SQLite connection."""
     module_addr = int(ffi.cast("uintptr_t", tokenizer_module))
     address_blob = sqlite3.Binary(struct.pack("P", module_addr))
-    if not enable_fts3_tokenizer(conn):
-        warnings.warn("enabling 2-arg fts3_tokenizer failed.", RuntimeWarning)
     cur = conn.cursor()
     try:
         r = cur.execute("SELECT fts3_tokenizer(?, ?)", (name, address_blob)).fetchall()
