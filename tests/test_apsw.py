@@ -335,6 +335,9 @@ def test_tokenizer_output():
             assert e == a
 
 
+@pytest.mark.xfail(
+    apsw.using_amalgamation, reason="FTS5 with APSW+Amalgamation not supported"
+)
 def test_fts5_api_from_db():
     with apsw.Connection(":memory:") as c:
         fts5api, _ = fts5.fts5_api_from_db(c)
@@ -342,6 +345,11 @@ def test_fts5_api_from_db():
         assert fts5api.xCreateTokenizer
 
 
+@pytest.mark.xfail(
+    apsw.using_amalgamation,
+    reason="FTS5 with APSW+Amalgamation not supported",
+    raises=fts.Error,
+)
 def test_aux_and_tokenize():
     c = apsw.Connection(":memory:")
     try:
