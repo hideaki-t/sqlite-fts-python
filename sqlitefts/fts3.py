@@ -15,7 +15,6 @@ from typing import (
     Iterator,
     List,
     Tuple,
-    TypeAlias,
     TypeVar,
     Union,
 )
@@ -27,6 +26,7 @@ from .tokenizer import SQLITE_DONE, SQLITE_ERROR, SQLITE_OK, ffi
 
 if typing.TYPE_CHECKING:
     import apsw
+    from typing_extensions import TypeAlias
 
     Pointed = TypeVar("Pointed")
 
