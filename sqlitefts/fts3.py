@@ -229,10 +229,10 @@ def register_tokenizer(
     address_blob = sqlite3.Binary(struct.pack("P", module_addr))
     cur = conn.cursor()
     try:
-        r = cur.execute("SELECT fts3_tokenizer(?, ?)", (name, address_blob)).fetchall()
+        r = cur.execute("SELECT fts3_tokenizer(?, ?)", (name, address_blob)).fetchone()
+        return r is not None
     finally:
         cur.close()
-    return r
 
 
 __all__ = ["Tokenizer", "make_tokenizer_module", "register_tokenizer", "Error"]
