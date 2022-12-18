@@ -63,8 +63,6 @@ SQLITE_DBCONFIG_ENABLE_FTS3_TOKENIZER = 1004
 
 ffi.cdef(
     """
-int sqlite3_db_config(sqlite3 *, int op, ...);
-
 typedef struct sqlite3_tokenizer_module sqlite3_tokenizer_module;
 typedef struct sqlite3_tokenizer sqlite3_tokenizer;
 typedef struct sqlite3_tokenizer_cursor sqlite3_tokenizer_cursor;

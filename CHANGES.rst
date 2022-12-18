@@ -5,8 +5,9 @@
    * TODO: stabilize interface for FTS5 auxiliary functions
 
 1.0.0
-   * TODO: test target changes: drop 3.5 and 3.6, add 3.11
-   * TODO: support statically linked sqlite
+   * support 3.11 and drop older than 3.7. 3.5 and 3.6 still may work, but not tested
+   * (FTS3/4) stop using direct SQLite C API call - this will unblock APSW Amalgamation build
+   * (Non Windows) use "_sqlite3" native extension instead of "libsqlite3" to access SQLite internals - to unblock some Python installations that has "_sqlite3" with "libsqlite3" statically linked. see https://github.com/hideaki-t/sqlite-fts-python/issues/30
 
 0.5.1
    * drop Python 3.3 support. Although this module still works on Python 3.3, but it won't be tested anymore.
