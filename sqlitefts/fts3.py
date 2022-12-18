@@ -7,7 +7,6 @@ from __future__ import annotations
 import sqlite3
 import struct
 import typing
-import warnings
 from typing import (
     Callable,
     Dict,
@@ -24,7 +23,7 @@ from typing import (
 import cffi
 
 from .error import Error
-from .tokenizer import SQLITE_DONE, SQLITE_ERROR, SQLITE_OK, ffi, get_db_from_connection
+from .tokenizer import SQLITE_DONE, SQLITE_ERROR, SQLITE_OK, ffi
 
 if typing.TYPE_CHECKING:
     Pointed = TypeVar("Pointed")
@@ -218,22 +217,12 @@ def make_tokenizer_module(
     return tokenizer_module
 
 
-def enable_fts3_tokenizer(c: sqlite3.Connection) -> bool:
-    db, dll = get_db_from_connection(c)
-    rc: int = dll.sqlite3_db_config(  # type: ignore
-        db, SQLITE_DBCONFIG_ENABLE_FTS3_TOKENIZER, ffi.cast("int", 1), ffi.NULL  # type: ignore
-    )
-    return rc == SQLITE_OK
-
-
 def register_tokenizer(
     conn: sqlite3.Connection, name: str, tokenizer_module: FTS3TokenizerModule
 ):
     """register tokenizer module with SQLite connection."""
     module_addr = int(ffi.cast("uintptr_t", tokenizer_module))
     address_blob = sqlite3.Binary(struct.pack("P", module_addr))
-    if not enable_fts3_tokenizer(conn):
-        warnings.warn("enabling 2-arg fts3_tokenizer failed.", RuntimeWarning)
     cur = conn.cursor()
     try:
         r = cur.execute("SELECT fts3_tokenizer(?, ?)", (name, address_blob)).fetchall()
