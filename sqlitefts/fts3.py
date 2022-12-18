@@ -34,7 +34,7 @@ if typing.TYPE_CHECKING:
         def __getitem__(self, n: int) -> Pointed:
             ...
 
-        def __setitem__(self, key: int, value: Pointed, /) -> Pointed:
+        def __setitem__(self, key: int, value: Pointed) -> Pointed:
             ...
 
     FTS3TokenizerModule: TypeAlias = cffi.FFI.CData
