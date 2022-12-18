@@ -52,8 +52,6 @@ _mod_cache: dict[str, cffi_lib] = {}
 if sys.platform == "win32":
 
     def _get_dll(_):
-        import sqlite3  # noqa
-
         dll = _mod_cache.get("sqlite3.dll")
         if not dll:
             _mod_cache["sqlite3.dll"] = dll = ffi.dlopen("sqlite3.dll")
