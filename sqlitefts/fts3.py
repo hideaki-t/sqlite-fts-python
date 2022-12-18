@@ -128,9 +128,9 @@ def make_tokenizer_module(
         if hasattr(tokenizer, "__call__"):
             args: list[str] = [ffi.string(x).decode("utf-8") for x in argv[0:argc]]  # type: ignore
             tk = tokenizer(args)  # type: ignore
-        elif isinstance(tokenizer, Tokenizer):
-            tk = tokenizer
         else:
+            tk = tokenizer
+        if not hasattr(tokenizer, "tokenize"):
             return SQLITE_ERROR
 
         th: Pointer[Tokenizer] = ffi.new_handle(tk)  # type: ignore
