@@ -134,10 +134,8 @@ def make_tokenizer_module(
         else:
             return SQLITE_ERROR
 
-        th = typing.cast(Pointer[Tokenizer], ffi.new_handle(tk))
-        tkn: SQLiteTokenizer = typing.cast(
-            SQLiteTokenizer, ffi.new("sqlite3_tokenizer *")
-        )
+        th: Pointer[Tokenizer] = ffi.new_handle(tk)  # type: ignore
+        tkn: SQLiteTokenizer = ffi.new("sqlite3_tokenizer *")  # type: ignore
         tkn.t = th
         tokenizers[tkn] = th
         ppTokenizer[0] = tkn
@@ -157,14 +155,10 @@ def make_tokenizer_module(
         nInput: int,
         ppCursor: Pointer[FTS3TokenizerCursor],
     ) -> int:
-        cur: FTS3TokenizerCursor = typing.cast(
-            FTS3TokenizerCursor, ffi.new("sqlite3_tokenizer_cursor *")
-        )
-        tokenizer: Tokenizer = ffi.from_handle(
-            typing.cast(cffi.FFI.CData, pTokenizer.t)
-        )
-        i: str = typing.cast(str, ffi.string(pInput).decode("utf-8"))  # type: ignore
-        tokens = [(n.encode("utf-8"), b, e) for n, b, e in tokenizer.tokenize(i) if n]
+        cur: FTS3TokenizerCursor = ffi.new("sqlite3_tokenizer_cursor *")  # type: ignore
+        tokenizer: Tokenizer = ffi.from_handle(pTokenizer.t)  # type:ignore
+        i: str = ffi.string(pInput).decode("utf-8")  # type: ignore
+        tokens = [(n.encode("utf-8"), b, e) for n, b, e in tokenizer.tokenize(i) if n]  # type: ignore
         tknh = ffi.new_handle(iter(tokens))
         cur.pTokenizer = pTokenizer
         cur.tokens = tknh
@@ -202,9 +196,7 @@ def make_tokenizer_module(
 
     @ffi.callback("int(sqlite3_tokenizer_cursor *)")
     def xclose(pCursor: FTS3TokenizerCursor) -> int:
-        tk: Tokenizer = ffi.from_handle(
-            typing.cast(cffi.FFI.CData, pCursor.pTokenizer.t)
-        )
+        tk: Tokenizer = ffi.from_handle(pCursor.pTokenizer.t)  # type: ignore
         on_close = getattr(tk, "on_close", None)
         if on_close and hasattr(on_close, "__call__"):
             on_close()
