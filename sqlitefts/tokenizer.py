@@ -83,7 +83,12 @@ def get_db_from_connection(c: sqlite3.Connection) -> tuple[Any, cffi_lib]:
     if _db:
         # pypy's SQLite3 connection has _db using cffi
         return ffi.cast("sqlite3*", _db), _get_dll("_sqlite3_cffi")
-    return ffi.cast("PyObject *", id(c)).db, _get_dll("_sqlite3")  # type: ignore
+    _db = getattr(c, "sqlite3pointer", None)
+    if _db:
+        db = ffi.cast("sqlite3*", _db.__call__())
+    else:
+        db: FFI.CData = ffi.cast("PyObject *", id(c)).db  # type: ignore
+    return db, _get_dll("_sqlite3")
 
 
 __all__ = ["SQLITE_OK", "SQLITE_DONE", "SQLITE_ERROR", "ffi"]

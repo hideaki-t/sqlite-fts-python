@@ -26,6 +26,8 @@ from .error import Error
 from .tokenizer import SQLITE_DONE, SQLITE_ERROR, SQLITE_OK, ffi
 
 if typing.TYPE_CHECKING:
+    import apsw
+
     Pointed = TypeVar("Pointed")
 
     class Pointer(Generic[Pointed]):
@@ -218,7 +220,9 @@ def make_tokenizer_module(
 
 
 def register_tokenizer(
-    conn: sqlite3.Connection, name: str, tokenizer_module: FTS3TokenizerModule
+    conn,  # type: Union[sqlite3.Connection, "apsw.Connection"]
+    name: str,
+    tokenizer_module: FTS3TokenizerModule,
 ):
     """register tokenizer module with SQLite connection."""
     module_addr = int(ffi.cast("uintptr_t", tokenizer_module))
