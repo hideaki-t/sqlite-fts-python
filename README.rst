@@ -63,16 +63,15 @@ FTS5::
 Requirements
 ============
 
- * Python 2.7, Python 3.5+, and PyPy2.7, PyPy3.7+ (older versions may work, but not tested)
+ * Python 2.7, Python 3.7+, and PyPy2.7, PyPy3.7+ (older versions may work, but not tested)
  * CFFI_
  * FTS3/4 and/or FTS5 enabled SQLite3 or APSW_ (OS/Python bundled SQLite3 shared library may not work, building sqlite3 from source or pre-compiled binary may be required)
 
    * SQLite 3.11.x have to be compiled with -DSQLITE_ENABLE_FTS3_TOKENIZER to enable 2-arg fts3_tokenizer
-   * SQLite 3.10.2 and older versions do not have extra requirements. 2-arg fts3_tokenizer is always avaiable.
-   * SQLite 3.12.0 and later vesrions do not have extra requirements. 2-arg fts3_tokenizer can be enabled dynamically.
+   * SQLite older/newer than 3.11.x do not have extra requirements
 
 Note for APSW users:
- * An APSW Amalgamation build does not expose SQLite APIs used in this module, so libsqlite3.so/sqlite3.dll is also required even it has no runtime library dependencies on SQLite. An APSW local build already depends on the shared library. Detail: sqlite3_db_config can be invoked via Connection.config, but it rejects SQLITE_DBCONFIG_ENABLE_FTS3_TOKENIZER to register a new tokenizer. tested at APSW 3.21.0-r1.
+ * FTS3 should work as same as builtin sqlite3 - sqlite3(_sqlite3) is used to access SQLite internals
  * sqlitefts.fts5 does not support APSW Amalgamation build. see GH-14_
 
 Licence
