@@ -2,10 +2,58 @@
 """
 support library to write SQLite FTS5 tokenizer
 """
+import sqlite3
 import struct
 
 from .error import Error
-from .tokenizer import SQLITE_OK, ffi, get_db_from_connection
+from .tokenizer import SQLITE_ERROR, SQLITE_OK, ffi, get_db_from_connection
+
+import typing
+from typing import Any, Callable, Iterable, List, Optional, Set, Tuple, TypeAlias, Union
+
+if typing.TYPE_CHECKING:
+    from . import fts3
+    from .fts3 import TokenInfo, Pointer
+    from cffi import FFI
+
+    CData = FFI.CData
+    CType = FFI.CType
+
+    class SQLiteCAPI:
+        def sqlite3_prepare_v2(
+            self, db: CData, sql: bytes, n_byte: int, pp_stmt: Pointer[CData], _: CType
+        ) -> int:
+            ...
+
+        def sqlite3_bind_pointer(
+            self, stmt: CData, pos: int, ptr: Pointer[CData], typ: CData, dtor: CType
+        ) -> int:
+            ...
+
+        def sqlite3_step(self, stmt: CData) -> int:
+            ...
+
+        def sqlite3_finalize(self, stmt: CData) -> int:
+            ...
+
+        def sqlite3_errmsg(self, db: CData) -> CData:
+            ...
+
+    FTS5_Tokenizer: TypeAlias = CData
+
+    class FTS5API:
+        iVersion: int
+
+        def xCreateTokenizer(
+            self,
+            fts5_api: "FTS5API",
+            name: bytes,
+            context: Any,
+            tokenizer: FTS5_Tokenizer,
+            dtor: Union[CType, Callable[[CData], None]],
+        ) -> int:
+            ...
+
 
 FTS5_TOKENIZE_QUERY = 0x0001
 FTS5_TOKENIZE_PREFIX = 0x0002
@@ -99,12 +147,12 @@ struct Fts5ExtensionApi {
 )
 
 
-class FTS5Tokenizer(object):
+class FTS5Tokenizer:
     """
     Tokenizer base class for FTS5.
     """
 
-    def tokenize(self, text: str, flags: int):
+    def tokenize(self, text: str, flags: int) -> Iterable[TokenInfo]:
         """
         Tokenize given unicode text. Yields each tokenized token,
         start position(in bytes), end positon(in bytes).
@@ -121,10 +169,10 @@ class FTS3TokenizerAdaptor(FTS5Tokenizer):
     wrap a FTS3 tokenizer instance to adapt it to FTS5 Tokenizer interface
     """
 
-    def __init__(self, fts3tokenizer):
+    def __init__(self, fts3tokenizer: "fts3.Tokenizer"):
         self.fts3tokenizer = fts3tokenizer
 
-    def tokenize(self, text, flags):
+    def tokenize(self, text: str, flags: int):
         return self.fts3tokenizer.tokenize(text)
 
 
@@ -134,7 +182,7 @@ registred_fts5_tokenizers = {}
 """hold references to prevent GC"""
 
 
-def fts5_api_from_db(c):
+def fts5_api_from_db(c: sqlite3.Connection, db: CData, dll: SQLiteCAPI) -> FTS5API:
     cur = c.cursor()
     try:
         cur.execute("SELECT sqlite_version()")
@@ -142,43 +190,53 @@ def fts5_api_from_db(c):
         if ver < (3, 20, 0):
             cur.execute("SELECT fts5()")
             blob = cur.fetchone()[0]
-            pRet = ffi.cast("fts5_api*", struct.unpack("P", blob)[0])
+            ret = ffi.cast("fts5_api*", struct.unpack("P", blob)[0])
         else:
-            db, dll = get_db_from_connection(c)
-            pRet = ffi.new("fts5_api**")
-            pStmt = ffi.new("sqlite3_stmt**")
+            pRet: Pointer[CData] = ffi.new("fts5_api**")  # type: ignore
+            pStmt: Pointer[CData] = ffi.new("sqlite3_stmt**")  # type: ignore
             rc = dll.sqlite3_prepare_v2(db, b"SELECT fts5(?1)", -1, pStmt, ffi.NULL)
             if rc == SQLITE_OK:
-                r = dll.sqlite3_bind_pointer(pStmt[0], 1, pRet, FTS5_API_PTR, ffi.NULL)
-                if r != SQLITE_OK or dll.sqlite3_step(pStmt[0]) != SQLITE_ROW:
-                    pRet = None
+                rc = dll.sqlite3_bind_pointer(pStmt[0], 1, pRet, FTS5_API_PTR, ffi.NULL)
+                if rc == SQLITE_OK and dll.sqlite3_step(pStmt[0]) == SQLITE_ROW:
+                    ret = pRet[0]
                 else:
-                    pRet = pRet[0]
+                    ret = None
             else:
-                raise Error(
-                    "unable to get fts5_api(new). rc={}/{}".format(
-                        rc, ffi.string(dll.sqlite3_errmsg(db)).decode("utf-8")
-                    )
-                )
+                ret = None
             dll.sqlite3_finalize(pStmt[0])
     finally:
         cur.close()
-    return pRet, dll
+    if ret is None:
+        raise Error(
+            "unable to get fts5_api(new). rc={}/{}".format(
+                rc, ffi.string(dll.sqlite3_errmsg(db)).decode("utf-8")  # type: ignore
+            )
+        )
+    return ret  # type: ignore
 
 
-def register_tokenizer(c, name, tokenizer, context=None, on_destroy=None):
+def register_tokenizer(
+    c: sqlite3.Connection,
+    name: str,
+    tokenizer: FTS5_Tokenizer,
+    context: Any = None,
+    on_destroy: Optional[Callable[[Any], None]] = None,
+) -> bool:
     """
     register a tokenizer to SQLite connection
     """
-    fts5api, _ = fts5_api_from_db(c)
+    dll: SQLiteCAPI
+    db, dll = get_db_from_connection(c)  # type: ignore
+    fts5api: FTS5API = fts5_api_from_db(c, db, dll)
     pContext = ffi.new_handle(context) if context is not None else ffi.NULL
+    xDestroy: Union[CType, Callable[[CData], None]]
     if on_destroy is None:
         xDestroy = ffi.NULL
     else:
 
         @ffi.callback("void(void*)")
-        def _xDestroy(context):
-            on_destroy(ffi.from_handle(context))
+        def _xDestroy(context: CData):
+            on_destroy(ffi.from_handle(context))  # type: ignore
 
         xDestroy = _xDestroy
 
@@ -189,20 +247,22 @@ def register_tokenizer(c, name, tokenizer, context=None, on_destroy=None):
     return r == SQLITE_OK
 
 
-def make_fts5_tokenizer(tokenizer):
+def make_fts5_tokenizer(
+    tokenizer: Union[Callable[[CData, List[str]], FTS5Tokenizer], FTS5Tokenizer]
+) -> FTS5_Tokenizer:
     """
     make a FTS5 tokenizer using given tokenizer.
     tokenizer can be an instance of Tokenizer or a Tokenizer class or
     a method to get an instance of tokenizer.
     if a class is given, an instance of the class will be created as needed.
     """
-    tokenizers = set()
+    tokenizers: Set[CData] = set()
 
     @ffi.callback("int(void*, const char **, int, Fts5Tokenizer **)")
-    def xcreate(ctx, argv, argc, ppOut):
+    def xcreate(ctx: CData, argv: Pointer[CData], argc: int, ppOut: Pointer[CData]):
         if hasattr(tokenizer, "__call__"):
-            args = [ffi.string(x).decode("utf-8") for x in argv[0:argc]]
-            tk = tokenizer(ffi.from_handle(ctx), args)
+            args = [ffi.string(x).decode("utf-8") for x in argv[0:argc]]  # type: ignore
+            tk = tokenizer(ffi.from_handle(ctx), args)  # type: ignore
         else:
             tk = tokenizer
         th = ffi.new_handle(tk)
@@ -212,7 +272,7 @@ def make_fts5_tokenizer(tokenizer):
         return SQLITE_OK
 
     @ffi.callback("void(Fts5Tokenizer *)")
-    def xdelete(pTokenizer):
+    def xdelete(pTokenizer: CData):
         th = ffi.cast("void *", pTokenizer)
         tk = ffi.from_handle(th)
         on_delete = getattr(tk, "on_delete", None)
@@ -226,16 +286,18 @@ def make_fts5_tokenizer(tokenizer):
         "int(Fts5Tokenizer *, void *, int, const char *, int, "
         "int(void*, int, const char *, int, int, int))"
     )
-    def xtokenize(pTokenizer, pCtx, flags, pText, nText, xToken):
-        tokenizer = ffi.from_handle(ffi.cast("void *", pTokenizer))
-        text = ffi.string(pText[0:nText]).decode("utf-8")
-        for normalized, begin, end in tokenizer.tokenize(text, flags):
-            normalized = normalized.encode("utf-8")
+    def xtokenize(
+        pTokenizer: CData, pCtx: CData, flags: int, pText: CData, nText: int, xToken
+    ) -> int:
+        tokenizer: FTS5Tokenizer = ffi.from_handle(ffi.cast("void *", pTokenizer))
+        text: str = ffi.string(pText[0:nText]).decode("utf-8")  # type: ignore
+        for orig, begin, end in tokenizer.tokenize(text, flags):  # type: ignore
+            normalized = orig.encode("utf-8")
             if not normalized:
                 continue
 
             # TODO: Synonym Support
-            r = xToken(
+            r: int = xToken(
                 pCtx, 0, ffi.from_buffer(normalized), len(normalized), begin, end
             )
             if r != SQLITE_OK:
