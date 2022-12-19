@@ -78,7 +78,7 @@ else:
         return dll
 
 
-def get_db_from_connection(c: sqlite3.Connection) -> tuple[Any, cffi_lib]:
+def get_db_from_connection(c: sqlite3.Connection) -> tuple[FFI.CData, cffi_lib]:
     _db = getattr(c, "_db", None)
     if _db:
         # pypy's SQLite3 connection has _db using cffi
