@@ -7,5 +7,5 @@
 #   all-features: false
 
 -e file:.
-cffi==1.16.0
+cffi==1.16.0 ; platform_python_implementation != "PyPy"
 pycparser==2.21
