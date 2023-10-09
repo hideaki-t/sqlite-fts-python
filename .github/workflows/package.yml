@@ -7,7 +7,7 @@ on: [push]
 #    branches: [ master ]
 
 jobs:
-  build:
+  test:
     runs-on: ${{ matrix.platform }}
     continue-on-error: ${{ matrix.experimental }}
     strategy:
@@ -37,3 +37,14 @@ jobs:
       - name: Test with tox
         run: |
           tox
+  package-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: sksat/setup-rye@v0.9.0
+      - name: install python deps
+        run: |
+          rye sync --no-lock
+      - name: build package
+        run:
+          rye build -v
