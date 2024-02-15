@@ -283,10 +283,25 @@ def test_tokenizer_output(c, tokenizer_module):
                 (t, expect[-1][2] + 1, expect[-1][2] + 1 + len(t.encode("utf-8")), i)
             )
         expect = expect[1:]
+        a = c.execute(
+            "SELECT token, start, end, position FROM tok1 WHERE input=?", [s]
+        ).fetchall()
         for a, e in zip(
             c.execute(
-                "SELECT token, start, end, position " "FROM tok1 WHERE input=?", [s]
+                "SELECT token, start, end, position FROM tok1 WHERE input=?", [s]
             ),
             expect,
         ):
             assert e == a
+
+        c.execute("CREATE VIRTUAL TABLE tok2 USING fts3tokenize()")
+        s = '"binding" OR "あいうえお"'
+        for a, e in zip(
+            c.execute(
+                "SELECT token, start, end, position FROM tok1 WHERE input=?", [s]
+            ),
+            c.execute(
+                "SELECT token, start, end, position FROM tok2 WHERE input=?", [s]
+            ),
+        ):
+            assert a == e
