@@ -19,7 +19,7 @@ class SimpleTokenizer(fts.Tokenizer):
     def tokenize(self, text):
         for m in self._p.finditer(text):
             s, e = m.span()
-            t = text[s:e]
+            t = text[s:e].lower()
             l = len(t.encode("utf-8"))
             p = len(text[:s].encode("utf-8"))
             yield t, p, p + l
@@ -256,12 +256,12 @@ furnished to do so, subject to the following conditions:""",
 
 
 def test_tokenizer_output(c, tokenizer_module):
-    name = "simple"
+    name = "s"
     with sqlite3.connect(":memory:") as c:
         fts.register_tokenizer(c, name, tokenizer_module)
         c.execute("CREATE VIRTUAL TABLE tok1 USING fts3tokenize({})".format(name))
-        expect = [
-            ("This", 0, 4, 0),
+        expect: list[tuple[str | None, int, int, int]] = [
+            ("this", 0, 4, 0),
             ("is", 5, 7, 1),
             ("a", 8, 9, 2),
             ("test", 10, 14, 3),
