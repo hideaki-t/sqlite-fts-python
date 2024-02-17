@@ -331,6 +331,14 @@ furnished to do so, subject to the following conditions:""",
         c.executemany("INSERT INTO docs(title, body) VALUES(?, ?)", docs)
         c.execute("CREATE VIRTUAL TABLE docs_term USING FTS4AUX(docs)")
         orig_terms = c.execute("SELECT * FROM docs_term").fetchall()
+        r = c.execute(
+            """SELECT * FROM docs WHERE docs MATCH '"binding" OR "あいうえお"'"""
+        ).fetchall()
+        assert len(r) == 2
+        r = c.execute(
+            """SELECT * FROM docs WHERE docs MATCH '"provides binding" OR あいうえお'"""
+        ).fetchall()
+        assert len(r) == 2
         c.execute("DROP TABLE docs_term")
         c.execute("DROP TABLE docs")
         fts.register_tokenizer(c, name, tokenizer_module)
