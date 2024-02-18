@@ -37,3 +37,14 @@ jobs:
       - name: Test with tox
         run: |
           tox
+  test-static:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: sksat/setup-rye@v0.8.0
+      - name: prepare
+        run: |
+          rye sync
+      - name: run pytest
+        run: |
+          rye run pytest
