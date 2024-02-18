@@ -4,6 +4,7 @@ a proof of concept implementation of SQLite FTS tokenizers in Python
 """
 import sys
 
+from .error import Error
 from cffi import FFI  # type: ignore
 
 SQLITE_OK = 0
@@ -16,17 +17,23 @@ if sys.platform == "win32":
 
     dll = ffi.dlopen("sqlite3.dll")
 else:
-    from ctypes.util import find_library
 
-    try:
-        # try to use _sqlite3.so first
+    def get_dll():
+        from ctypes.util import find_library
+        from ctypes import CDLL
         import _sqlite3  # noqa
 
-        dll = ffi.dlopen(_sqlite3.__file__)
-    except:
-        dll = ffi.dlopen(find_library("sqlite3"))
-    ffi.cdef("int sqlite3_initialize(void);")
-    assert dll.sqlite3_initialize() == 0
+        so = getattr(_sqlite3, "__file__", find_library("sqlite3"))
+        if so is None:
+            raise Error("no sqlite3 lib found")
+        cdll = CDLL(so)
+        if not hasattr(cdll, "sqlite3_initialize"):
+            raise Error("required symbols not found in " + so)
+        cdll.sqlite3_initialize()
+        return ffi.dlopen(so)
+
+    dll = get_dll()
+    del get_dll
 
 if hasattr(sys, "getobjects"):
     # for a python built with Py_TRACE_REFS
