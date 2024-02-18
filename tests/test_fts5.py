@@ -5,10 +5,14 @@ import re
 import sqlite3
 from collections import Counter
 
+import _sqlite3
 import pytest
 from cffi import FFI
 
 from sqlitefts import fts5, fts5_aux
+
+if not hasattr(_sqlite3, "__file__"):
+    pytest.skip("detected statically linked sqlite", allow_module_level=True)
 
 ffi = FFI()
 
