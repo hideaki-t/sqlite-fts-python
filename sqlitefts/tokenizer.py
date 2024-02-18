@@ -25,6 +25,8 @@ else:
         dll = ffi.dlopen(_sqlite3.__file__)
     except:
         dll = ffi.dlopen(find_library("sqlite3"))
+    ffi.cdef("int sqlite3_initialize(void);")
+    assert dll.sqlite3_initialize() == 0
 
 if hasattr(sys, "getobjects"):
     # for a python built with Py_TRACE_REFS
