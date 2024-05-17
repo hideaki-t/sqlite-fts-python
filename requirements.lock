@@ -5,7 +5,10 @@
 #   pre: false
 #   features: []
 #   all-features: false
+#   with-sources: false
 
 -e file:.
-cffi==1.16.0 ; platform_python_implementation != "PyPy"
-pycparser==2.21
+cffi==1.16.0
+    # via sqlitefts
+pycparser==2.22
+    # via cffi
