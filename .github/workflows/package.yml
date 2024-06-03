@@ -35,7 +35,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
         run: |
-          python3 -m pip install -U pip
+          python3 -m pip install --break-system-packages -U pip
           python3 -m pip install tox tox-gh-actions
           tox --version
       - name: Install native deps (Linux)
