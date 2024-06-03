@@ -6,14 +6,15 @@
 #   features: []
 #   all-features: false
 #   with-sources: false
+#   generate-hashes: false
 
 -e file:.
 black==24.4.2
-cffi==1.16.0
+cffi==1.17.0rc1
     # via sqlitefts
 click==8.1.7
     # via black
-faker==25.2.0
+faker==25.3.0
 flake8==7.0.0
 iniconfig==2.0.0
     # via pytest
@@ -39,13 +40,13 @@ pycparser==2.22
     # via cffi
 pyflakes==3.2.0
     # via flake8
-pytest==8.2.0
+pytest==8.2.1
 python-dateutil==2.9.0.post0
     # via faker
 six==1.16.0
     # via python-dateutil
 types-cffi==1.16.0.20240331
-types-setuptools==69.5.0.20240513
+types-setuptools==70.0.0.20240524
     # via types-cffi
-typing-extensions==4.11.0
+typing-extensions==4.12.0
     # via mypy

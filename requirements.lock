@@ -6,9 +6,10 @@
 #   features: []
 #   all-features: false
 #   with-sources: false
+#   generate-hashes: false
 
 -e file:.
-cffi==1.16.0
+cffi==1.17.0rc1
     # via sqlitefts
 pycparser==2.22
     # via cffi
