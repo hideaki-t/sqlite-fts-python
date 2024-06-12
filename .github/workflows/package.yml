@@ -35,7 +35,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
         run: |
-          python -m pip install tox tox-gh-actions
+          python3 -m pip install tox tox-gh-actions
           tox --version
       - name: Install native deps (Linux)
         if: runner.os == 'Linux'
