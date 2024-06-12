@@ -15,7 +15,7 @@ jobs:
       matrix:
         platform: [ubuntu-latest, macos-latest, windows-latest]
         python-version:
-          ["3.8", "3.9", "3.10", "3.11", "3.12", "pypy2.7", "pypy3.10"]
+          ["3.8", "3.9", "3.10", "3.11", "3.12", "pypy3.10"]
         experimental: [false]
         include:
           - python-version: 3.13-dev
@@ -25,6 +25,15 @@ jobs:
             platform: windows-latest
             experimental: true
           - python-version: 3.13-dev
+            platform: macos-latest
+            experimental: true
+          - python-version: pypy2.7
+            platform: ubuntu-latest
+            experimental: true
+          - python-version: pypy2.7
+            platform: windows-latest
+            experimental: true
+          - python-version: pypy2.7
             platform: macos-latest
             experimental: true
     steps:
