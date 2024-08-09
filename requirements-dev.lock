@@ -7,10 +7,11 @@
 #   all-features: false
 #   with-sources: false
 #   generate-hashes: false
+#   universal: false
 
 -e file:.
 black==24.4.2
-cffi==1.17.0rc1
+cffi==1.17.0
     # via sqlitefts
 click==8.1.7
     # via black
