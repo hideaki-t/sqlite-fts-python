@@ -24,9 +24,6 @@ jobs:
           - python-version: pypy2.7
             platform: windows-latest
             experimental: true
-          - python-version: pypy2.7
-            platform: macos-latest
-            experimental: true
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python ${{ matrix.python-version }}
