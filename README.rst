@@ -63,7 +63,7 @@ FTS5::
 Requirements
 ============
 
- * Python 2.7, Python 3.7+, and PyPy2.7, PyPy3.7+ (older versions may work, but not tested)
+ * Python 2.7, Python 3.9+, and PyPy2.7, PyPy3.10+ (older versions may work, but not tested)
  * CFFI_
  * FTS3/4 and/or FTS5 enabled SQLite3 or APSW_ (OS/Python bundled SQLite3 shared library may not work, building sqlite3 from source or pre-compiled binary may be required)
 

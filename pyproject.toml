@@ -4,11 +4,11 @@ version = "1.0.0"
 description = "A Python binding for tokenizers of SQLite Full Text Search"
 authors = [{ name = "Hideaki Takahashi", email = "mymelo@gmail.com" }]
 dependencies = [
-    "cffi>=1.17.0; python_version >= '3.8'",
+    "cffi>=1.17.0; python_version >= '3.9'",
     "cffi>=1.15.1 ; platform_python_implementation != 'PyPy'",
 ]
 readme = "README.rst"
-requires-python = ">=2.7,>=3.5,<4"
+requires-python = ">=2.7,>=3.9,<4"
 license = { text = "MIT" }
 keywords = [
   "SQLite",
@@ -26,11 +26,11 @@ classifiers = [
   "License :: OSI Approved :: MIT License",
   "Operating System :: OS Independent",
   "Programming Language :: Python :: 2.7",
-  "Programming Language :: Python :: 3.8",
   "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
   "Programming Language :: Python :: Implementation :: PyPy",
   "Programming Language :: Python :: Implementation :: CPython",
   "Topic :: Database",
@@ -54,10 +54,10 @@ packages = ["sqlitefts"]
 [tool.uv]
 dev-dependencies = [
     "mypy>=1.11.2 ; python_version >= '3.12'",
-    "faker>=28.0.0 ; python_version >= '3.12'",
+    "faker>=30.0.0 ; python_full_version >= '3.12'",
     "pytest>=8.3.2 ; python_version >= '3.12'",
     "types-cffi>=1.16.0.0 ; python_version >= '3.12'",
-    "ruff>=0.6.2 ; python_version >= '3.12'"
+    "ruff>=0.6.2 ; python_version >= '3.12'",
 ]
 
 [tool.hatch.build]

@@ -31,6 +31,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           allow-prereleases: true
+          cache: pip
       - name: Install dependencies
         run: |
           python3 -m pip install 'tox>=4' 'tox-gh-actions>=3'
