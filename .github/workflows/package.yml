@@ -24,6 +24,9 @@ jobs:
           - python-version: pypy2.7
             os: windows-latest
             experimental: true
+          - python-version: "3.13"
+            os: ubuntu-24.04-arm
+            experimental: false
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python ${{ matrix.python-version }}
