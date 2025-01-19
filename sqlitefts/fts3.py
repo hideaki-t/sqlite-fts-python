@@ -89,7 +89,7 @@ def make_tokenizer_module(tokenizer):
     def xopen(pTokenizer, pInput, nInput, ppCursor):
         cur = ffi.new("sqlite3_tokenizer_cursor *")
         tokenizer = ffi.from_handle(pTokenizer.t)
-        i = ffi.string(pInput).decode("utf-8")
+        i = ffi.string(pInput, nInput).decode("utf-8")
         tokens = [(n.encode("utf-8"), b, e) for n, b, e in tokenizer.tokenize(i) if n]
         tknh = ffi.new_handle(iter(tokens))
         cur.pTokenizer = pTokenizer

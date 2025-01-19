@@ -19,7 +19,7 @@ class SimpleTokenizer(fts.Tokenizer):
     def tokenize(self, text):
         for m in self._p.finditer(text):
             s, e = m.span()
-            t = text[s:e]
+            t = text[s:e].lower()
             l = len(t.encode("utf-8"))
             p = len(text[:s].encode("utf-8"))
             yield t, p, p + l
@@ -256,12 +256,12 @@ furnished to do so, subject to the following conditions:""",
 
 
 def test_tokenizer_output(c, tokenizer_module):
-    name = "simple"
+    name = "s"
     with sqlite3.connect(":memory:") as c:
         fts.register_tokenizer(c, name, tokenizer_module)
         c.execute("CREATE VIRTUAL TABLE tok1 USING fts3tokenize({})".format(name))
-        expect = [
-            ("This", 0, 4, 0),
+        expect: list[tuple[str | None, int, int, int]] = [
+            ("this", 0, 4, 0),
             ("is", 5, 7, 1),
             ("a", 8, 9, 2),
             ("test", 10, 14, 3),
@@ -283,10 +283,79 @@ def test_tokenizer_output(c, tokenizer_module):
                 (t, expect[-1][2] + 1, expect[-1][2] + 1 + len(t.encode("utf-8")), i)
             )
         expect = expect[1:]
+        a = c.execute(
+            "SELECT token, start, end, position FROM tok1 WHERE input=?", [s]
+        ).fetchall()
         for a, e in zip(
             c.execute(
-                "SELECT token, start, end, position " "FROM tok1 WHERE input=?", [s]
+                "SELECT token, start, end, position FROM tok1 WHERE input=?", [s]
             ),
             expect,
         ):
             assert e == a
+
+        c.execute("CREATE VIRTUAL TABLE tok2 USING fts3tokenize()")
+        s = '"binding" OR "あいうえお"'
+        for a, e in zip(
+            c.execute(
+                "SELECT token, start, end, position FROM tok1 WHERE input=?", [s]
+            ),
+            c.execute(
+                "SELECT token, start, end, position FROM tok2 WHERE input=?", [s]
+            ),
+        ):
+            assert a == e
+
+
+def test_quoted(c, tokenizer_module):
+    name = "simple1"
+    docs = [
+        (
+            "README",
+            "sqlitefts-python provides binding for tokenizer of SQLite Full-Text search(FTS3/4). It allows you to write tokenizers in Python.",
+        ),
+        (
+            "LICENSE",
+            """Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:""",
+        ),
+        ("日本語", "あいうえお かきくけこ さしすせそ たちつてと なにぬねの"),
+    ]
+
+    with c:
+        c.execute("CREATE VIRTUAL TABLE docs USING FTS4(title, body)")
+        c.executemany("INSERT INTO docs(title, body) VALUES(?, ?)", docs)
+        c.execute("CREATE VIRTUAL TABLE docs_term USING FTS4AUX(docs)")
+        orig_terms = c.execute("SELECT * FROM docs_term").fetchall()
+        r = c.execute(
+            """SELECT * FROM docs WHERE docs MATCH '"binding" OR "あいうえお"'"""
+        ).fetchall()
+        assert len(r) == 2
+        r = c.execute(
+            """SELECT * FROM docs WHERE docs MATCH '"provides binding" OR あいうえお'"""
+        ).fetchall()
+        assert len(r) == 2
+        c.execute("DROP TABLE docs_term")
+        c.execute("DROP TABLE docs")
+        fts.register_tokenizer(c, name, tokenizer_module)
+        c.execute(
+            "CREATE VIRTUAL TABLE docs USING FTS4(title, body, tokenize={})".format(
+                name
+            )
+        )
+        c.executemany("INSERT INTO docs(title, body) VALUES(?, ?)", docs)
+        c.execute("CREATE VIRTUAL TABLE docs_term USING FTS4AUX(docs)")
+        terms = c.execute("SELECT * FROM docs_term").fetchall()
+        assert terms == orig_terms
+        r = c.execute(
+            """SELECT * FROM docs WHERE docs MATCH '"binding" OR "あいうえお"'"""
+        ).fetchall()
+        assert len(r) == 2
+        r = c.execute(
+            """SELECT * FROM docs WHERE docs MATCH '"provides binding" OR あいうえお'"""
+        ).fetchall()
+        assert len(r) == 2
