@@ -28,6 +28,9 @@ jobs:
           - python-version: "3.13"
             os: ubuntu-24.04-arm
             experimental: false
+          - python-version: "3.13"
+            os: windows-11-arm
+            experimental: false
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python ${{ matrix.python-version }}
