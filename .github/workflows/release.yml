@@ -1,0 +1,36 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - test-v*
+  release:
+    types:
+      - "published"
+
+jobs:
+  publish:
+    strategy:
+      matrix:
+        environment:
+          - pypi
+          - testpypi
+        exclude:
+          - environment: ${{ !startsWith(github.ref_name, 'v') && 'pypi' }}
+          - environment: ${{ contains(github.ref_name, 'test') && 'pypi' }}
+          - environment: ${{ github.event_name == 'release' && 'testpypi' }}
+    name: Publish to PyPI ${{ matrix.environment }} from ${{ github.ref_name }}
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ matrix.environment }}
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v3
+      - run: uv build
+      - name: Smoke test (wheel)
+        run: uv run --isolated --no-project -p 3.13 --with dist/*.whl --with pytest pytest tests/test_base.py
+      - name: Smoke test (source distribution)
+        run: uv run --isolated --no-project -p 3.13 --with dist/*.tar.gz --with pytest pytest tests/test_base.py
+      - run: uv publish --trusted-publishing always ${{ matrix.environment == 'testpypi' && '--index testpypi' || '' }}
