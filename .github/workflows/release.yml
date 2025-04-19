@@ -18,7 +18,7 @@ jobs:
         exclude:
           - environment: ${{ !startsWith(github.ref_name, 'v') && 'pypi' }}
           - environment: ${{ contains(github.ref_name, 'test') && 'pypi' }}
-          - environment: ${{ (!contains(github.ref_name, 'test') && startsWith(github.ref_name, 'v')) || 'testpypi' }}
+          - environment: ${{ github.event_name == 'release' && 'testpypi' }}
     name: Publish to PyPI ${{ matrix.environment }} from ${{ github.ref_name }}
     runs-on: ubuntu-latest
     environment:
