@@ -27,7 +27,7 @@ jobs:
       id-token: write
     steps:
       - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v3
+      - uses: astral-sh/setup-uv@v5
       - run: uv build
       - name: Smoke test (wheel)
         run: uv run --isolated --no-project -p 3.13 --with dist/*.whl --with pytest pytest tests/test_base.py
