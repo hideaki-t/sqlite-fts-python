@@ -12,14 +12,14 @@ jobs:
   publish:
     strategy:
       matrix:
-       environment:
-         - pypi
-         - testpypi
-       exclude:
-         - environment: ${{ !startsWith(github.ref_name, 'v') && 'pypi' }}
-         - environment: ${{ contains(github.ref_name, 'test') && 'pypi' }}
-         - environment: ${{ (!contains(github.ref_name, 'test') && startsWith(github.ref_name, 'v')) || 'testpypi' }}
-    name: Publish to PyPI
+        environment:
+          - pypi
+          - testpypi
+        exclude:
+          - environment: ${{ !startsWith(github.ref_name, 'v') && 'pypi' }}
+          - environment: ${{ contains(github.ref_name, 'test') && 'pypi' }}
+          - environment: ${{ (!contains(github.ref_name, 'test') && startsWith(github.ref_name, 'v')) || 'testpypi' }}
+    name: Publish to PyPI ${{ matrix.environment }} from ${{ github.ref_name }}
     runs-on: ubuntu-latest
     environment:
       name: ${{ matrix.environment }}
