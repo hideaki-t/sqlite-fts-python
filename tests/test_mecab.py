@@ -14,8 +14,11 @@ mecab = pytest.importorskip("MeCab")
 
 class MeCabTokenizer(fts.Tokenizer):
     def __init__(self):
-        self.tagger = mecab.Tagger(os.getenv("MECABRC", "/etc/mecabrc"))
-        self.tagger.parseToNode("")
+        try:
+            self.tagger = mecab.Tagger()
+        except:
+            self.tagger = mecab.Tagger("".join(["-r",  os.getenv("MECABRC", "/etc/mecabrc")]))
+            self.tagger.parseToNode("")
 
     if sys.version_info.major == 2:
 
