@@ -64,6 +64,9 @@ Requirements
 ============
 
  * Python 2.7, Python 3.9+, and PyPy2.7, PyPy3.10+ (older versions may work, but not tested)
+
+   * sqlite3 has to be dynamically linked. see GH-37_
+
  * CFFI_
  * FTS3/4 and/or FTS5 enabled SQLite3 or APSW_ (OS/Python bundled SQLite3 shared library may not work, building sqlite3 from source or pre-compiled binary may be required)
 
@@ -97,3 +100,4 @@ Thanks
 .. _build status: https://github.com/hideaki-t/sqlite-fts-python/actions/workflows/package.yml
 .. _APSW: https://github.com/rogerbinns/apsw
 .. _GH-14: https://github.com/hideaki-t/sqlite-fts-python/issues/14
+.. _GH-37: https://github.com/hideaki-t/sqlite-fts-python/issues/37
