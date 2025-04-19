@@ -1,6 +1,6 @@
 [project]
 name = "sqlitefts"
-version = "1.0.0"
+version = "1.0.dev0"
 description = "A Python binding for tokenizers of SQLite Full Text Search"
 authors = [{ name = "Hideaki Takahashi", email = "mymelo@gmail.com" }]
 dependencies = [
