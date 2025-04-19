@@ -47,4 +47,4 @@ jobs:
           sudo apt install -y mecab libmecab-dev mecab-ipadic-utf8
       - name: Test with tox
         run: |
-          MECABRC=/etc/mecabrc tox
+          tox

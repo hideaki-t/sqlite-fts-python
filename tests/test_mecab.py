@@ -1,6 +1,7 @@
 # coding: utf-8
 from __future__ import print_function
 
+import os
 import sys
 
 import pytest
@@ -13,7 +14,7 @@ mecab = pytest.importorskip("MeCab")
 
 class MeCabTokenizer(fts.Tokenizer):
     def __init__(self):
-        self.tagger = mecab.Tagger()
+        self.tagger = mecab.Tagger(os.getenv("MECABRC", "/etc/mecabrc"))
         self.tagger.parseToNode("")
 
     if sys.version_info.major == 2:
