@@ -1,5 +1,8 @@
 1.0.0
-   * support 3.11 and drop older than 3.7. 3.5 and 3.6 still may work, but not tested
+   * supported version changed. from 3.9 to 3.13, and 2.7. Python 3.5 - 3.8 may still work, but not tested.
+
+     * 1.0.0 will be last Python 2.7 compatible version.
+
    * (FTS3/4) stop using direct SQLite C API call - this will unblock APSW Amalgamation build
    * (Non Windows) use "_sqlite3" native extension instead of "libsqlite3" to access SQLite internals - to unblock some Python installations that has "_sqlite3" with "libsqlite3" statically linked. see https://github.com/hideaki-t/sqlite-fts-python/issues/30
 
