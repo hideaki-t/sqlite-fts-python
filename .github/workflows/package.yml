@@ -6,11 +6,6 @@ on: [push]
 #  pull_request:
 #    branches: [ master ]
 
-env:
-  # pre-built wheel from https://pypi.org/project/mecab/ defaults to /usr/local/etc/mecabrc
-  # but mecab from ubuntu uses /etc/mecabrc
-  # mecab is only used for testing on Linux, should be harmless to define globally
-  MECABRC: /etc/mecabrc
 
 jobs:
   build:
@@ -52,4 +47,4 @@ jobs:
           sudo apt install -y mecab libmecab-dev mecab-ipadic-utf8
       - name: Test with tox
         run: |
-          tox
+          MECABRC=/etc/mecabrc tox
