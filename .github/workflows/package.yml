@@ -47,3 +47,7 @@ jobs:
       - name: Test with tox
         run: |
           tox
+        env:
+          # pre-built wheel from https://pypi.org/project/mecab/ defaults to /usr/local/etc/mecabrc
+          # but mecab from ubuntu uses /etc/mecabrc
+          MECABRC: /etc/mecabrc
