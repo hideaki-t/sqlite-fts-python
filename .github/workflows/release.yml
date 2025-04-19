@@ -4,13 +4,16 @@ on:
   push:
     tags:
       - test-v*
+  release:
+    types:
+      - "published"
 
 jobs:
   pypi:
     name: Publish to PyPI
     runs-on: ubuntu-latest
     environment:
-      name: testpypi
+      name: ${{ !contains(github.ref_name, 'test') && startsWith(github.ref_name, 'v') && 'pypi' || 'testpypi' }}
     permissions:
       id-token: write
     steps:
