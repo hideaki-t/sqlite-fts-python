@@ -33,4 +33,4 @@ jobs:
         run: uv run --isolated --no-project -p 3.13 --with dist/*.whl --with pytest pytest tests/test_base.py
       - name: Smoke test (source distribution)
         run: uv run --isolated --no-project -p 3.13 --with dist/*.tar.gz --with pytest pytest tests/test_base.py
-      - run: uv publish --trusted-publishing always ${{ matrix.environment == 'testpypi' && '--index testpypi' }}
+      - run: uv publish --trusted-publishing always ${{ matrix.environment == 'testpypi' && '--index testpypi' || '' }}
