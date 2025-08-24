@@ -45,6 +45,9 @@ jobs:
           python-version: ${{ matrix.python-version }}
           allow-prereleases: true
           cache: pip
+      - name: tox-gh workaround for freethreaded
+        if: ${{ matrix.python-version == '3.14t' }}
+        run: echo "TOX_GH_MAJOR_MINOR=3.14t" >> $GITHUB_ENV
       - name: Install dependencies
         run: |
           python3 -m pip install 'tox' 'tox-gh'
