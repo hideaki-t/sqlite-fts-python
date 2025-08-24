@@ -4,6 +4,7 @@ version = "1.0.0"
 description = "A Python binding for tokenizers of SQLite Full Text Search"
 authors = [{ name = "Hideaki Takahashi", email = "mymelo@gmail.com" }]
 dependencies = [
+    "cffi>=2.0.0b1; python_version >= '3.14'",
     "cffi>=1.17.0; python_version >= '3.9'",
     "cffi>=1.15.1 ; platform_python_implementation != 'PyPy'",
 ]
