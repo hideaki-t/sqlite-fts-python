@@ -47,7 +47,7 @@ jobs:
           cache: pip
       - name: Install dependencies
         run: |
-          python3 -m pip install 'tox>=4' 'tox-gh-actions>=3'
+          python3 -m pip install 'tox' 'tox-gh'
           tox --version
       - name: Install native deps (Linux)
         if: runner.os == 'Linux'
