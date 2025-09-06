@@ -26,15 +26,32 @@ else:
     except:
         dll = ffi.dlopen(find_library("sqlite3"))
 
-if hasattr(sys, "getobjects"):
+if "t" in sys.abiflags:
+    ffi.cdef(
+        """
+typedef struct sqlite3 sqlite3;
+typedef struct {
+  uintptr_t ob_tid;
+  uint16_t _padding;
+  uint8_t ob_mutex;
+  uint8_t ob_gc_bits;
+  uint32_t ob_ref_local;
+  ssize_t ob_ref_shared;
+  void *ob_type;
+  sqlite3 *db;
+} PyObject;
+"""
+    )
+elif hasattr(sys, "getobjects"):
     # for a python built with Py_TRACE_REFS
     ffi.cdef(
         """
 typedef struct sqlite3 sqlite3;
 typedef struct {
-  void *_ob_next;
-  void *_ob_prev;
-  size_t ob_refcnt;
+  union {
+    ssize_t ob_refcnt;
+    uint32_t ob_refcnt_split[2];
+  };
   void *ob_type;
   sqlite3 *db;
 } PyObject;
