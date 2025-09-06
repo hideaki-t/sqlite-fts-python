@@ -2,7 +2,9 @@
 """
 a proof of concept implementation of SQLite FTS tokenizers in Python
 """
+
 import sys
+import sysconfig
 
 from cffi import FFI  # type: ignore
 
@@ -26,7 +28,7 @@ else:
     except:
         dll = ffi.dlopen(find_library("sqlite3"))
 
-if "t" in sys.abiflags:
+if sysconfig.get_config_var("Py_GIL_DISABLED") == 1:
     ffi.cdef(
         """
 typedef struct sqlite3 sqlite3;
