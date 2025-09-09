@@ -31,6 +31,15 @@ jobs:
           - python-version: "3.14"
             os: ubuntu-24.04-arm
             experimental: true
+          - python-version: "3.14"
+            os: windows-latest
+            experimental: true
+          - python-version: "3.14"
+            os: windows-11-arm
+            experimental: true
+          - python-version: "3.14"
+            os: macos-latest
+            experimental: true
           - python-version: "3.14t"
             os: ubuntu-latest
             experimental: true
