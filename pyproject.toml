@@ -51,11 +51,12 @@ packages = ["sqlitefts"]
 
 [tool.uv]
 dev-dependencies = [
-    "mypy>=1.11.2 ; python_version >= '3.12'",
-    "faker>=30.0.0 ; python_full_version >= '3.12'",
-    "pytest>=8.3.2 ; python_version >= '3.12'",
-    "types-cffi>=1.16.0.0 ; python_version >= '3.12'",
-    "ruff>=0.6.2 ; python_version >= '3.12'",
+    "mypy>=1.11.2 ; python_version >= '3.13'",
+    "faker>=30.0.0 ; python_full_version >= '3.13'",
+    "pytest>=8.3.2 ; python_version >= '3.13'",
+    "types-cffi>=1.16.0.0 ; python_version >= '3.13'",
+    "ruff>=0.6.2 ; python_version >= '3.13'",
+    "ty>=0.0.1a20 ; python_version >= '3.13'",
 ]
 
 [tool.hatch.build]
@@ -71,3 +72,18 @@ name = "testpypi"
 url = "https://test.pypi.org/simple/"
 publish-url = "https://test.pypi.org/legacy/"
 explicit = true
+
+[tool.ruff]
+line-length = 120
+preview = true
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "C", "B", "I"]
+ignore = []
+fixable = ["ALL"]
+
+[tool.ruff.format]
+line-ending = "lf"
+
+[tool.ruff.lint.isort]
+known-first-party = ["sqlitefts"]
