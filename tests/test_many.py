@@ -70,24 +70,16 @@ def test_insert_many_each(conn, nr):
 
 def test_insert_many_many(conn, nr):
     with conn:
-        conn.executemany(
-            "INSERT INTO fts VALUES(?)", ([fake.address()] for _ in range(nr))
-        )
-        conn.executemany(
-            "INSERT INTO fts5 VALUES(?)", ([fake.address()] for _ in range(nr))
-        )
+        conn.executemany("INSERT INTO fts VALUES(?)", ([fake.address()] for _ in range(nr)))
+        conn.executemany("INSERT INTO fts5 VALUES(?)", ([fake.address()] for _ in range(nr)))
     assert conn.execute("SELECT COUNT(*) FROM fts").fetchall()[0][0] == nr
     assert conn.execute("SELECT COUNT(*) FROM fts5").fetchall()[0][0] == nr
 
 
 def test_insert_many_use_select(conn, nr):
     with conn:
-        conn.executemany(
-            "INSERT INTO fts VALUES(?)", ([fake.address()] for _ in range(nr))
-        )
-        conn.executemany(
-            "INSERT INTO fts5 VALUES(?)", ([fake.address()] for _ in range(nr))
-        )
+        conn.executemany("INSERT INTO fts VALUES(?)", ([fake.address()] for _ in range(nr)))
+        conn.executemany("INSERT INTO fts5 VALUES(?)", ([fake.address()] for _ in range(nr)))
     with conn:
         conn.execute("INSERT INTO fts SELECT * FROM fts")
         conn.execute("INSERT INTO fts5 SELECT * FROM fts5")

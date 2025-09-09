@@ -12,15 +12,9 @@ def test_createtable(name, t):
     sql = "CREATE VIRTUAL TABLE fts USING FTS4(tokenize={})".format(name)
     fts.register_tokenizer(c, name, fts.make_tokenizer_module(t))
     c.execute(sql)
-    r = c.execute(
-        "SELECT * FROM sqlite_master WHERE type='table' AND name='fts'"
-    ).fetchone()
+    r = c.execute("SELECT * FROM sqlite_master WHERE type='table' AND name='fts'").fetchone()
     assert r
-    assert (
-        r[str("type")] == "table"
-        and r[str("name")] == "fts"
-        and r[str("tbl_name")] == "fts"
-    )
+    assert r[str("type")] == "table" and r[str("name")] == "fts" and r[str("tbl_name")] == "fts"
     assert r[str("sql")].upper() == sql.upper()
     c.close()
 
@@ -42,7 +36,10 @@ def test_insert(name, t):
 def test_match(name, t):
     c = sqlite3.connect(":memory:")
     c.row_factory = sqlite3.Row
-    contents = [("これは日本語で書かれています",), (" これは　日本語の文章を 全文検索するテストです",)]
+    contents = [
+        ("これは日本語で書かれています",),
+        (" これは　日本語の文章を 全文検索するテストです",),
+    ]
     fts.register_tokenizer(c, name, fts.make_tokenizer_module(t))
     c.execute("CREATE VIRTUAL TABLE fts USING FTS4(tokenize={})".format(name))
     r = c.executemany("INSERT INTO fts VALUES(?)", contents)
@@ -72,27 +69,24 @@ def test_tokenizer_output(name, t):
             ("sentence", 15, 23, 4),
         ]
         for a, e in zip(
-            c.execute(
-                "SELECT token, start, end, position "
-                "FROM tok1 WHERE input='This is a test sentence.'"
-            ),
+            c.execute("SELECT token, start, end, position FROM tok1 WHERE input='This is a test sentence.'"),
             expect,
+            strict=False,
         ):
             assert e == a
 
         s = "これ は テスト の 文 です"
         expect = [(None, 0, 0, 0)]
         for i, txt in enumerate(s.split()):
-            expect.append(
-                (txt, expect[-1][2], expect[-1][2] + len(txt.encode("utf-8")), i)
-            )
+            expect.append((txt, expect[-1][2], expect[-1][2] + len(txt.encode("utf-8")), i))
         expect = expect[1:]
         for a, e in zip(
             c.execute(
-                "SELECT token, start, end, position " "FROM tok1 WHERE input=?",
+                "SELECT token, start, end, position FROM tok1 WHERE input=?",
                 [s.replace(" ", "")],
             ),
             expect,
+            strict=False,
         ):
             assert e == a
 

@@ -86,4 +86,4 @@ fixable = ["ALL"]
 line-ending = "lf"
 
 [tool.ruff.lint.isort]
-known-first-party = ["sqlitefts"]
+known-first-party = ["sqlitefts", "jajp_common"]

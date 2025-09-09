@@ -7,19 +7,14 @@ _aux_funcs_holder = {}
 """holding references of aux funcs to prevent GC"""
 
 
-@ffi.callback(
-    "void(const Fts5ExtensionApi*, Fts5Context*,"
-    "sqlite3_context*, int, sqlite3_value**)"
-)
+@ffi.callback("void(const Fts5ExtensionApi*, Fts5Context*,sqlite3_context*, int, sqlite3_value**)")
 def aux_tokenize(pApi, pFts, pCtx, nVal, apVal):
-    """ FTS5 AUX function to tokenize a column.
+    """FTS5 AUX function to tokenize a column.
 
     this function is a callback function, thus it should not be called directly
     """
     if nVal != 1:
-        dll.sqlite3_result_error(
-            pCtx, ffi.new("char[]", "this function accepts only 1 argument")
-        )
+        dll.sqlite3_result_error(pCtx, ffi.new("char[]", "this function accepts only 1 argument"))
         return
 
     col = dll.sqlite3_value_int(apVal[0])
@@ -39,9 +34,7 @@ def aux_tokenize(pApi, pFts, pCtx, nVal, apVal):
 
     rc = pApi.xTokenize(pFts, pz[0], pn[0], ffi.NULL, token)
     if rc == SQLITE_OK:
-        dll.sqlite3_result_text(
-            pCtx, ffi.new("char []", b", ".join(tokens)), -1, SQLITE_TRANSIENT
-        )
+        dll.sqlite3_result_text(pCtx, ffi.new("char []", b", ".join(tokens)), -1, SQLITE_TRANSIENT)
     else:
         dll.sqlite3_result_error_code(pCtx, rc)
 

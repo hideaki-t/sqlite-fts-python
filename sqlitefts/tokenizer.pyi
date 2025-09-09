@@ -8,5 +8,5 @@ SQLITE_OK: int
 SQLITE_DONE: int
 
 def get_db_from_connection(
-    c: Union[sqlite3.Connection, apsw.Connection]
+    c: Union[sqlite3.Connection, apsw.Connection],
 ) -> SQLITE3DBHandle: ...

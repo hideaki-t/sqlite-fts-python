@@ -81,15 +81,9 @@ def test_createtable(c, tm):
     fts5.register_tokenizer(c, name, tm)
     c.execute(sql)
 
-    r = c.execute(
-        "SELECT * FROM sqlite_master WHERE type='table' AND name='fts'"
-    ).fetchone()
+    r = c.execute("SELECT * FROM sqlite_master WHERE type='table' AND name='fts'").fetchone()
     assert r
-    assert (
-        r[str("type")] == "table"
-        and r[str("name")] == "fts"
-        and r[str("tbl_name")] == "fts"
-    )
+    assert r[str("type")] == "table" and r[str("name")] == "fts" and r[str("tbl_name")] == "fts"
     assert r[str("sql")].upper() == sql.upper()
     c.close()
 
@@ -107,16 +101,12 @@ def test_createtale_using_tokenizer_class(c):
 
     name = "super_simple"
     fts5.register_tokenizer(c, name, fts5.make_fts5_tokenizer(ST), context="test")
-    sql = (
-        "CREATE VIRTUAL TABLE fts " "USING FTS5(content, tokenize='{} {} {}')"
-    ).format(name, "arg", "引数")
+    sql = ("CREATE VIRTUAL TABLE fts USING FTS5(content, tokenize='{} {} {}')").format(name, "arg", "引数")
     c.execute(sql)
     assert len(initialized) == 1
     assert list(initialized.values()) == [("test", ("arg", "引数"))]
     assert len(deleted) == 0
-    sql = (
-        "CREATE VIRTUAL TABLE fts_2 " "USING FTS5(content, tokenize='{} {} {}')"
-    ).format(name, "arg2", "引数2")
+    sql = ("CREATE VIRTUAL TABLE fts_2 USING FTS5(content, tokenize='{} {} {}')").format(name, "arg2", "引数2")
     c.execute(sql)
     c.close()
     assert set(initialized.values()) == {
@@ -141,7 +131,12 @@ def test_insert(c, tm):
 
 def test_match(c, tm):
     name = "super_simple"
-    contents = [("abc def",), ("abc xyz",), ("あいうえお かきくけこ",), ("あいうえお らりるれろ",)]
+    contents = [
+        ("abc def",),
+        ("abc xyz",),
+        ("あいうえお かきくけこ",),
+        ("あいうえお らりるれろ",),
+    ]
     fts5.register_tokenizer(c, name, tm)
     c.execute("CREATE VIRTUAL TABLE fts USING FTS5(content, tokenize={})".format(name))
     r = c.executemany("INSERT INTO fts VALUES(?)", contents)
@@ -187,11 +182,7 @@ furnished to do so, subject to the following conditions:""",
     ]
     with c:
         fts5.register_tokenizer(c, name, tm)
-        c.execute(
-            "CREATE VIRTUAL TABLE docs USING FTS5(title, body, tokenize={})".format(
-                name
-            )
-        )
+        c.execute("CREATE VIRTUAL TABLE docs USING FTS5(title, body, tokenize={})".format(name))
         c.executemany("INSERT INTO docs(title, body) VALUES(?, ?)", docs)
         r = c.execute("SELECT * FROM docs WHERE docs MATCH 'Python'").fetchall()
         assert len(r) == 1
@@ -207,23 +198,15 @@ furnished to do so, subject to the following conditions:""",
         assert len(r) == 0
         assert (
             c.execute("SELECT * FROM docs WHERE docs MATCH 'binding'").fetchall()[0]
-            == c.execute(
-                "SELECT * FROM docs WHERE docs MATCH 'body:binding'"
-            ).fetchall()[0]
+            == c.execute("SELECT * FROM docs WHERE docs MATCH 'body:binding'").fetchall()[0]
         )
         assert (
-            c.execute("SELECT * FROM docs WHERE docs MATCH 'body:binding'").fetchall()[
-                0
-            ]
-            == c.execute(
-                "SELECT * FROM docs WHERE docs MATCH 'body:binding'"
-            ).fetchall()[0]
+            c.execute("SELECT * FROM docs WHERE docs MATCH 'body:binding'").fetchall()[0]
+            == c.execute("SELECT * FROM docs WHERE docs MATCH 'body:binding'").fetchall()[0]
         )
         assert (
             c.execute("SELECT * FROM docs WHERE docs MATCH 'あいうえお'").fetchall()[0]
-            == c.execute("SELECT * FROM docs WHERE docs MATCH 'body:あいうえお'").fetchall()[
-                0
-            ]
+            == c.execute("SELECT * FROM docs WHERE docs MATCH 'body:あいうえお'").fetchall()[0]
         )
         r = c.execute("SELECT * FROM docs WHERE docs MATCH 'title:bind'").fetchall()
         assert len(r) == 0
@@ -241,19 +224,13 @@ furnished to do so, subject to the following conditions:""",
         assert len(r) == 1
         r = c.execute("SELECT * FROM docs WHERE docs MATCH 'ん*'").fetchall()
         assert len(r) == 0
-        r = c.execute(
-            "SELECT * FROM docs WHERE docs MATCH 'tokenizer SQLite'"
-        ).fetchall()
+        r = c.execute("SELECT * FROM docs WHERE docs MATCH 'tokenizer SQLite'").fetchall()
         assert len(r) == 1
-        r = c.execute(
-            "SELECT * FROM docs WHERE docs MATCH '\"tokenizer SQLite\"'"
-        ).fetchall()
+        r = c.execute("SELECT * FROM docs WHERE docs MATCH '\"tokenizer SQLite\"'").fetchall()
         assert len(r) == 0
         r = c.execute("SELECT * FROM docs WHERE docs MATCH 'あいうえお たちつてと'").fetchall()
         assert len(r) == 1
-        r = c.execute(
-            "SELECT * FROM docs WHERE docs MATCH '\"あいうえお たちつてと\"'"
-        ).fetchall()
+        r = c.execute("SELECT * FROM docs WHERE docs MATCH '\"あいうえお たちつてと\"'").fetchall()
         assert len(r) == 0
         r = c.execute("SELECT * FROM docs WHERE docs MATCH 'tok* + SQL*'").fetchall()
         assert len(r) == 0
@@ -263,29 +240,17 @@ furnished to do so, subject to the following conditions:""",
         assert len(r) == 0
         r = c.execute("SELECT * FROM docs WHERE docs MATCH 'あ* かきくけこ さ*'").fetchall()
         assert len(r) == 1
-        r = c.execute(
-            "SELECT * FROM docs WHERE docs MATCH 'NEAR(tokenizer SQLite)'"
-        ).fetchall()
+        r = c.execute("SELECT * FROM docs WHERE docs MATCH 'NEAR(tokenizer SQLite)'").fetchall()
         assert len(r) == 1
-        r = c.execute(
-            "SELECT * FROM docs WHERE docs MATCH 'NEAR(binding SQLite, 2)'"
-        ).fetchall()
+        r = c.execute("SELECT * FROM docs WHERE docs MATCH 'NEAR(binding SQLite, 2)'").fetchall()
         assert len(r) == 0
-        r = c.execute(
-            "SELECT * FROM docs WHERE docs MATCH 'NEAR(binding SQLite, 3)'"
-        ).fetchall()
+        r = c.execute("SELECT * FROM docs WHERE docs MATCH 'NEAR(binding SQLite, 3)'").fetchall()
         assert len(r) == 1
-        r = c.execute(
-            "SELECT * FROM docs WHERE docs MATCH 'NEAR(あいうえお たちつてと)'"
-        ).fetchall()
+        r = c.execute("SELECT * FROM docs WHERE docs MATCH 'NEAR(あいうえお たちつてと)'").fetchall()
         assert len(r) == 1
-        r = c.execute(
-            "SELECT * FROM docs WHERE docs MATCH 'NEAR(あいうえお たちつてと, 2)'"
-        ).fetchall()
+        r = c.execute("SELECT * FROM docs WHERE docs MATCH 'NEAR(あいうえお たちつてと, 2)'").fetchall()
         assert len(r) == 1
-        r = c.execute(
-            "SELECT * FROM docs WHERE docs MATCH 'NEAR(あいうえお たちつてと, 3)'"
-        ).fetchall()
+        r = c.execute("SELECT * FROM docs WHERE docs MATCH 'NEAR(あいうえお たちつてと, 3)'").fetchall()
         assert len(r) == 1
 
 
@@ -299,13 +264,16 @@ def test_flags(c):
 
     name = "super_simple2"
     fts5.register_tokenizer(c, name, fts5.make_fts5_tokenizer(ST()))
-    sql = ("CREATE VIRTUAL TABLE fts " "USING FTS5(content, tokenize='{}')").format(
-        name
-    )
+    sql = ("CREATE VIRTUAL TABLE fts USING FTS5(content, tokenize='{}')").format(name)
     c.execute(sql)
     c.executemany(
         "INSERT INTO fts VALUES(?)",
-        [("abc def",), ("abc xyz",), ("あいうえお かきくけこ",), ("あいうえお らりるれろ",)],
+        [
+            ("abc def",),
+            ("abc xyz",),
+            ("あいうえお かきくけこ",),
+            ("あいうえお らりるれろ",),
+        ],
     )
     c.execute("SELECT * FROM fts WHERE fts MATCH 'abc'").fetchall()
     c.execute("SELECT * FROM fts WHERE fts MATCH 'abc'").fetchall()

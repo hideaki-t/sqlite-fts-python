@@ -9,6 +9,7 @@ from jajp_common import *  # noqa
 tinysegmenter = pytest.importorskip("tinysegmenter")
 ts = tinysegmenter.TinySegmenter()
 
+
 class TinySegmenterTokenizer(fts.Tokenizer):
     def __init__(self, path=None):
         pass

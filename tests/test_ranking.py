@@ -11,7 +11,6 @@ from sqlitefts import ranking
 
 
 class Tokenizer(fts.Tokenizer):
-
     _spliter = re.compile(r"\s+|\S+", re.UNICODE)
     _nonws = re.compile(r"\S+", re.UNICODE)
 
@@ -49,12 +48,8 @@ def db():
             "Sed posuere mi a nisl aliquet tempor. Praesent tincidunt vel nunc ac pharetra."
         ],
         ["Nam molestie euismod leo id aliquam. In hac habitasse platea dictumst."],
-        [
-            "Vivamus tincidunt feugiat tellus ac bibendum. In rhoncus dignissim suscipit."
-        ],
-        [
-            "Pellentesque hendrerit nulla rutrum luctus rutrum. Fusce hendrerit fermentum nunc at posuere."
-        ],
+        ["Vivamus tincidunt feugiat tellus ac bibendum. In rhoncus dignissim suscipit."],
+        ["Pellentesque hendrerit nulla rutrum luctus rutrum. Fusce hendrerit fermentum nunc at posuere."],
     ]
     for n in ("fts3", "fts4"):
         result = conn.executemany("INSERT INTO {0} VALUES(?)".format(n), values)
@@ -67,12 +62,7 @@ def db():
 
 
 def testSimple(db):
-    sql = (
-        "SELECT content, rank(matchinfo(fts3, 'pcx')) AS rank "
-        "FROM fts3 "
-        "WHERE fts3 MATCH :query "
-        "ORDER BY rank"
-    )
+    sql = "SELECT content, rank(matchinfo(fts3, 'pcx')) AS rank FROM fts3 WHERE fts3 MATCH :query ORDER BY rank"
     actual = [dict(x) for x in db.execute(sql, {"query": "thing"})]
 
     assert 2 == len(actual)
@@ -85,12 +75,7 @@ def testSimple(db):
 
 
 def testBm25(db):
-    sql = (
-        "SELECT content, bm25(matchinfo(fts4, 'pcnalx'), 1) AS rank "
-        "FROM fts4 "
-        "WHERE fts4 MATCH :query "
-        "ORDER BY rank"
-    )
+    sql = "SELECT content, bm25(matchinfo(fts4, 'pcnalx'), 1) AS rank FROM fts4 WHERE fts4 MATCH :query ORDER BY rank"
     actual = [dict(x) for x in db.execute(sql, {"query": "thing"})]
 
     assert 2 == len(actual)

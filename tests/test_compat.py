@@ -10,9 +10,6 @@ import pytest
 
 from sqlitefts import Tokenizer, make_tokenizer_module
 from sqlitefts.fts5 import FTS3TokenizerAdaptor, FTS5Tokenizer, make_fts5_tokenizer
-from test_base import c
-from test_base import test_full_text_index_queries as test_fts3
-from test_fts5 import test_full_text_index_queries as test_fts5
 
 
 class SimpleFTS5Tokenizer(FTS5Tokenizer):

@@ -10,7 +10,6 @@ import sqlitefts as fts
 
 
 class BaseTokenizer(fts.Tokenizer):
-
     _spliter = re.compile(r"\s+|\S+")
     _nonws = re.compile(r"\S+")
 
@@ -30,7 +29,6 @@ class BaseTokenizer(fts.Tokenizer):
 
 
 class DebugTokenizer(BaseTokenizer):
-
     _limit = 16
 
     def _normalize(self, token):
@@ -54,9 +52,7 @@ def db():
 
 
 def testZeroLengthToken(db):
-    result = db.executemany(
-        "INSERT INTO fts VALUES(?)", [("Make things I",), (u"Some σ φχικλψ",)]
-    )
+    result = db.executemany("INSERT INTO fts VALUES(?)", [("Make things I",), ("Some σ φχικλψ",)])
     assert 2 == result.rowcount
 
 

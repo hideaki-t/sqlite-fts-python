@@ -2,6 +2,7 @@
 """
 support library to write SQLite FTS5 tokenizer
 """
+
 import struct
 
 from .error import Error
@@ -188,9 +189,7 @@ def register_tokenizer(c, name, tokenizer, context=None, on_destroy=None):
 
         xDestroy = _xDestroy
 
-    r = fts5api.xCreateTokenizer(
-        fts5api, name.encode("utf-8"), pContext, tokenizer, xDestroy
-    )
+    r = fts5api.xCreateTokenizer(fts5api, name.encode("utf-8"), pContext, tokenizer, xDestroy)
     registred_fts5_tokenizers[name] = (tokenizer, pContext, xDestroy)
     return r == SQLITE_OK
 
@@ -206,7 +205,7 @@ def make_fts5_tokenizer(tokenizer):
 
     @ffi.callback("int(void*, const char **, int, Fts5Tokenizer **)")
     def xcreate(ctx, argv, argc, ppOut):
-        if hasattr(tokenizer, "__call__"):
+        if callable(tokenizer):
             args = [ffi.string(x).decode("utf-8") for x in argv[0:argc]]
             tk = tokenizer(ffi.from_handle(ctx), args)
         else:
@@ -222,16 +221,13 @@ def make_fts5_tokenizer(tokenizer):
         th = ffi.cast("void *", pTokenizer)
         tk = ffi.from_handle(th)
         on_delete = getattr(tk, "on_delete", None)
-        if on_delete and hasattr(on_delete, "__call__"):
+        if on_delete and callable(on_delete):
             on_delete()
 
         tokenizers.remove(th)
         return None
 
-    @ffi.callback(
-        "int(Fts5Tokenizer *, void *, int, const char *, int, "
-        "int(void*, int, const char *, int, int, int))"
-    )
+    @ffi.callback("int(Fts5Tokenizer *, void *, int, const char *, int, int(void*, int, const char *, int, int, int))")
     def xtokenize(pTokenizer, pCtx, flags, pText, nText, xToken):
         tokenizer = ffi.from_handle(ffi.cast("void *", pTokenizer))
         text = ffi.string(pText[0:nText]).decode("utf-8")
@@ -241,9 +237,7 @@ def make_fts5_tokenizer(tokenizer):
                 continue
 
             # TODO: Synonym Support
-            r = xToken(
-                pCtx, 0, ffi.from_buffer(normalized), len(normalized), begin, end
-            )
+            r = xToken(pCtx, 0, ffi.from_buffer(normalized), len(normalized), begin, end)
             if r != SQLITE_OK:
                 return r
         return SQLITE_OK

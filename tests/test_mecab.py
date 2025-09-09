@@ -17,7 +17,7 @@ class MeCabTokenizer(fts.Tokenizer):
         try:
             self.tagger = mecab.Tagger()
         except:
-            self.tagger = mecab.Tagger("".join(["-r",  os.getenv("MECABRC", "/etc/mecabrc")]))
+            self.tagger = mecab.Tagger("".join(["-r", os.getenv("MECABRC", "/etc/mecabrc")]))
             self.tagger.parseToNode("")
 
     if sys.version_info.major == 2:

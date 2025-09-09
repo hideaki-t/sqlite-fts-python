@@ -2,6 +2,7 @@
 """
 support library to write SQLite FTS3 tokenizer
 """
+
 import sqlite3
 import struct
 
@@ -65,7 +66,7 @@ def make_tokenizer_module(tokenizer):
 
     @ffi.callback("int(int, const char *const*, sqlite3_tokenizer **)")
     def xcreate(argc, argv, ppTokenizer):
-        if hasattr(tokenizer, "__call__"):
+        if callable(tokenizer):
             args = [ffi.string(x).decode("utf-8") for x in argv[0:argc]]
             tk = tokenizer(args)
         else:
@@ -83,9 +84,7 @@ def make_tokenizer_module(tokenizer):
         del tokenizers[tkn]
         return SQLITE_OK
 
-    @ffi.callback(
-        "int(sqlite3_tokenizer*, const char *, int, sqlite3_tokenizer_cursor **)"
-    )
+    @ffi.callback("int(sqlite3_tokenizer*, const char *, int, sqlite3_tokenizer_cursor **)")
     def xopen(pTokenizer, pInput, nInput, ppCursor):
         cur = ffi.new("sqlite3_tokenizer_cursor *")
         tokenizer = ffi.from_handle(pTokenizer.t)
@@ -100,9 +99,7 @@ def make_tokenizer_module(tokenizer):
         ppCursor[0] = cur
         return SQLITE_OK
 
-    @ffi.callback(
-        "int(sqlite3_tokenizer_cursor*, const char **, int *, int *, int *, int *)"
-    )
+    @ffi.callback("int(sqlite3_tokenizer_cursor*, const char **, int *, int *, int *, int *)")
     def xnext(pCursor, ppToken, pnBytes, piStartOffset, piEndOffset, piPosition):
         try:
             cur = pCursor[0]
@@ -123,15 +120,13 @@ def make_tokenizer_module(tokenizer):
     def xclose(pCursor):
         tk = ffi.from_handle(pCursor.pTokenizer.t)
         on_close = getattr(tk, "on_close", None)
-        if on_close and hasattr(on_close, "__call__"):
+        if on_close and callable(on_close):
             on_close()
 
         del cursors[pCursor]
         return SQLITE_OK
 
-    tokenizer_module = ffi.new(
-        "sqlite3_tokenizer_module*", [0, xcreate, xdestroy, xopen, xclose, xnext]
-    )
+    tokenizer_module = ffi.new("sqlite3_tokenizer_module*", [0, xcreate, xdestroy, xopen, xclose, xnext])
     tokenizer_modules[tokenizer] = (
         tokenizer_module,
         xcreate,
