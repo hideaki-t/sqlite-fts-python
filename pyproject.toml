@@ -40,14 +40,12 @@ Homepage = "https://github.com/hideaki-t/sqlite-fts-python/"
 Repository = "https://github.com/hideaki-t/sqlite-fts-python.git"
 
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+requires = ["uv_build>=0.9.3,<0.10.0"]
+build-backend = "uv_build"
 
-[tool.hatch.metadata]
-allow-direct-references = true
-
-[tool.hatch.build.targets.wheel]
-packages = ["sqlitefts"]
+[tool.uv.build-backend]
+module-name = "sqlitefts"
+module-root = ""
 
 [tool.uv]
 dev-dependencies = [
@@ -57,14 +55,6 @@ dev-dependencies = [
     "types-cffi>=1.16.0.0 ; python_version >= '3.13'",
     "ruff>=0.6.2 ; python_version >= '3.13'",
     "ty>=0.0.1a20 ; python_version >= '3.13'",
-]
-
-[tool.hatch.build]
-include = [
-  "sqlitefts/*.py",
-  "sqlitefts/*.pyi",
-  "sqlitefts/py.typed",
-  "tests/**",
 ]
 
 [[tool.uv.index]]
