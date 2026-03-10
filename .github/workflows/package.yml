@@ -19,12 +19,6 @@ jobs:
           ["3.10", "3.11", "3.12", "3.13", "3.14", "3.14t", "pypy3.11"]
         experimental: [false]
         include:
-          - python-version: "3.13"
-            os: ubuntu-24.04-arm
-            experimental: false
-          - python-version: "3.13"
-            os: windows-11-arm
-            experimental: false
           - python-version: "3.14"
             os: ubuntu-24.04-arm
             experimental: false
@@ -37,6 +31,19 @@ jobs:
           - python-version: "3.14t"
             os: windows-11-arm
             experimental: false
+          - python-version: "3.15-dev"
+            os: ubuntu-latest
+            experimental: true
+          - python-version: "3.15-dev"
+            os: macos-latest
+            experimental: true
+          - python-version: "3.15-dev"
+            os: windows-latest
+            experimental: true
+          - python-version: "3.15-dev"
+            os: ubuntu-24.04-arm
+            experimental: true
+
     steps:
       - uses: actions/checkout@v6
       - name: Set up Python ${{ matrix.python-version }}
@@ -46,11 +53,11 @@ jobs:
           allow-prereleases: true
           cache: pip
       - name: tox-gh workaround for freethreaded(!windows)
-        if: ${{ runner.os != 'Windows' && matrix.python-version == '3.14t' }}
-        run: echo "TOX_GH_MAJOR_MINOR=3.14t" >> $GITHUB_ENV
+        if: ${{ runner.os != 'Windows' && endsWith(matrix.python-version, 't') }}
+        run: echo "TOX_GH_MAJOR_MINOR=${{ matrix.python-version }}" >> $GITHUB_ENV
       - name: tox-gh workaround for freethreaded(windows)
-        if: ${{ runner.os == 'Windows' && matrix.python-version == '3.14t' }}
-        run: echo "TOX_GH_MAJOR_MINOR=3.14t" >> $env:GITHUB_ENV
+        if: ${{ runner.os == 'Windows' && endsWith(matrix.python-version, 't') }}
+        run: echo "TOX_GH_MAJOR_MINOR=${{ matrix.python-version }}" >> $env:GITHUB_ENV
       - name: Install dependencies
         run: |
           python3 -m pip install 'tox' 'tox-gh'
