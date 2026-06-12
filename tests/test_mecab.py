@@ -1,6 +1,5 @@
 
 import os
-import sys
 
 import pytest
 
@@ -18,32 +17,16 @@ class MeCabTokenizer(fts.Tokenizer):
             self.tagger = mecab.Tagger("".join(["-r", os.getenv("MECABRC", "/etc/mecabrc")]))
             self.tagger.parseToNode("")
 
-    if sys.version_info.major == 2:
-
-        def to_mecab(self, text):
-            return text.encode("utf-8")
-
-        def from_mecab(self, text):
-            return text.decode("utf-8")
-
-    else:
-
-        def to_mecab(self, text):
-            return text
-
-        def from_mecab(self, text):
-            return text
-
     def tokenize(self, text):
         p = 0
-        m = self.tagger.parseToNode(self.to_mecab(text))
+        m = self.tagger.parseToNode(text)
         while m:
             token_len = m.length
             d = m.rlength - token_len
             start = p + d
             p = start + token_len
             if token_len:
-                yield self.from_mecab(m.surface), start, p
+                yield m.surface, start, p
             m = m.next
 
 
