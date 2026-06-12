@@ -24,7 +24,6 @@ keywords = [
 classifiers = [
   "Development Status :: 4 - Beta",
   "Intended Audience :: Developers",
-  "License :: OSI Approved :: MIT License",
   "Operating System :: OS Independent",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
@@ -39,10 +38,11 @@ classifiers = [
 
 [project.urls]
 Homepage = "https://github.com/hideaki-t/sqlite-fts-python/"
-Repository = "https://github.com/hideaki-t/sqlite-fts-python.git"
+Repository = "https://github.com/hideaki-t/sqlite-fts-python"
+Issues = "https://github.com/hideaki-t/sqlite-fts-python/issues"
 
 [build-system]
-requires = ["uv_build>=0.10.8,<0.11.0"]
+requires = ["uv_build>=0.11.21,<0.12.0"]
 build-backend = "uv_build"
 
 [tool.uv.build-backend]
@@ -70,7 +70,7 @@ line-length = 120
 preview = true
 
 [tool.ruff.lint]
-select = ["E", "F", "W", "C", "B", "I"]
+select = ["E", "F", "W", "C", "B", "I", "UP", "RUF"]
 ignore = []
 fixable = ["ALL"]
 
