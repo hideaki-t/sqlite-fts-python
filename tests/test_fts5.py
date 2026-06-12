@@ -1,6 +1,5 @@
 
 import re
-import sqlite3
 from collections import Counter
 
 import pytest
@@ -21,13 +20,6 @@ class SimpleTokenizer(fts5.FTS5Tokenizer):
             token_len = len(t.encode("utf-8"))
             p = len(text[:s].encode("utf-8"))
             yield t, p, p + token_len
-
-
-@pytest.fixture
-def c():
-    c = sqlite3.connect(":memory:")
-    c.row_factory = sqlite3.Row
-    return c
 
 
 @pytest.fixture
@@ -160,28 +152,12 @@ def test_match(c, tm):
     c.close()
 
 
-def test_full_text_index_queries(c, tm):
+def test_full_text_index_queries(c, tm, test_docs):
     name = "super_simple"
-    docs = [
-        (
-            "README",
-            "sqlitefts-python provides binding for tokenizer of SQLite Full-Text search(FTS3/4). It allows you to write tokenizers in Python.",
-        ),
-        (
-            "LICENSE",
-            """Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:""",
-        ),
-        ("日本語", "あいうえお かきくけこ さしすせそ たちつてと なにぬねの"),
-    ]
     with c:
         fts5.register_tokenizer(c, name, tm)
         c.execute(f"CREATE VIRTUAL TABLE docs USING FTS5(title, body, tokenize={name})")
-        c.executemany("INSERT INTO docs(title, body) VALUES(?, ?)", docs)
+        c.executemany("INSERT INTO docs(title, body) VALUES(?, ?)", test_docs)
         r = c.execute("SELECT * FROM docs WHERE docs MATCH 'Python'").fetchall()
         assert len(r) == 1
         r = c.execute("SELECT * FROM docs WHERE docs MATCH 'bind'").fetchall()

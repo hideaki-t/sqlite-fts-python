@@ -24,13 +24,6 @@ class SimpleTokenizer(fts.Tokenizer):
 
 
 @pytest.fixture
-def c():
-    c = sqlite3.connect(":memory:")
-    c.row_factory = sqlite3.Row
-    return c
-
-
-@pytest.fixture
 def tokenizer_module():
     return fts.make_tokenizer_module(SimpleTokenizer())
 
@@ -120,28 +113,12 @@ def test_match(c, tokenizer_module):
     c.close()
 
 
-def test_full_text_index_queries(c, tokenizer_module):
+def test_full_text_index_queries(c, tokenizer_module, test_docs):
     name = "simple"
-    docs = [
-        (
-            "README",
-            "sqlitefts-python provides binding for tokenizer of SQLite Full-Text search(FTS3/4). It allows you to write tokenizers in Python.",
-        ),
-        (
-            "LICENSE",
-            """Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:""",
-        ),
-        ("日本語", "あいうえお かきくけこ さしすせそ たちつてと なにぬねの"),
-    ]
     with c:
         fts.register_tokenizer(c, name, tokenizer_module)
         c.execute(f"CREATE VIRTUAL TABLE docs USING FTS4(title, body, tokenize={name})")
-        c.executemany("INSERT INTO docs(title, body) VALUES(?, ?)", docs)
+        c.executemany("INSERT INTO docs(title, body) VALUES(?, ?)", test_docs)
         r = c.execute("SELECT * FROM docs WHERE docs MATCH 'Python'").fetchall()
         assert len(r) == 1
         r = c.execute("SELECT * FROM docs WHERE docs MATCH 'bind'").fetchall()
@@ -264,28 +241,12 @@ def test_tokenizer_output(c, tokenizer_module):
             assert a == e
 
 
-def test_quoted(c, tokenizer_module):
+def test_quoted(c, tokenizer_module, test_docs):
     name = "simple1"
-    docs = [
-        (
-            "README",
-            "sqlitefts-python provides binding for tokenizer of SQLite Full-Text search(FTS3/4). It allows you to write tokenizers in Python.",
-        ),
-        (
-            "LICENSE",
-            """Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:""",
-        ),
-        ("日本語", "あいうえお かきくけこ さしすせそ たちつてと なにぬねの"),
-    ]
 
     with c:
         c.execute("CREATE VIRTUAL TABLE docs USING FTS4(title, body)")
-        c.executemany("INSERT INTO docs(title, body) VALUES(?, ?)", docs)
+        c.executemany("INSERT INTO docs(title, body) VALUES(?, ?)", test_docs)
         c.execute("CREATE VIRTUAL TABLE docs_term USING FTS4AUX(docs)")
         orig_terms = c.execute("SELECT * FROM docs_term").fetchall()
         r = c.execute("""SELECT * FROM docs WHERE docs MATCH '"binding" OR "あいうえお"'""").fetchall()
@@ -296,7 +257,7 @@ furnished to do so, subject to the following conditions:""",
         c.execute("DROP TABLE docs")
         fts.register_tokenizer(c, name, tokenizer_module)
         c.execute(f"CREATE VIRTUAL TABLE docs USING FTS4(title, body, tokenize={name})")
-        c.executemany("INSERT INTO docs(title, body) VALUES(?, ?)", docs)
+        c.executemany("INSERT INTO docs(title, body) VALUES(?, ?)", test_docs)
         c.execute("CREATE VIRTUAL TABLE docs_term USING FTS4AUX(docs)")
         terms = c.execute("SELECT * FROM docs_term").fetchall()
         assert terms == orig_terms

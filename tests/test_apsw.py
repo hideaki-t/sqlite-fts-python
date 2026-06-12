@@ -95,28 +95,12 @@ def test_match():
     c.close()
 
 
-def test_full_text_index_queries():
+def test_full_text_index_queries(test_docs):
     name = "simple"
-    docs = [
-        (
-            "README",
-            "sqlitefts-python provides binding for tokenizer of SQLite Full-Text search(FTS3/4). It allows you to write tokenizers in Python.",
-        ),
-        (
-            "LICENSE",
-            """Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:""",
-        ),
-        ("日本語", "あいうえお かきくけこ さしすせそ たちつてと なにぬねの"),
-    ]
     with apsw.Connection(":memory:") as c:
         fts.register_tokenizer(c, name, fts.make_tokenizer_module(SimpleTokenizer()))
         c.cursor().execute(f"CREATE VIRTUAL TABLE docs USING FTS4(title, body, tokenize={name})")
-        c.cursor().executemany("INSERT INTO docs(title, body) VALUES(?, ?)", docs)
+        c.cursor().executemany("INSERT INTO docs(title, body) VALUES(?, ?)", test_docs)
         r = c.cursor().execute("SELECT * FROM docs WHERE docs MATCH 'Python'").fetchall()
         assert len(r) == 1
         r = c.cursor().execute("SELECT * FROM docs WHERE docs MATCH 'bind'").fetchall()
