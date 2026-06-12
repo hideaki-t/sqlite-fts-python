@@ -1,5 +1,3 @@
-# coding: utf-8
-from __future__ import print_function, unicode_literals
 
 import re
 
@@ -18,9 +16,9 @@ class SimpleTokenizer(fts.Tokenizer):
         for m in self._p.finditer(text):
             s, e = m.span()
             t = text[s:e]
-            l = len(t.encode("utf-8"))
+            token_len = len(t.encode("utf-8"))
             p = len(text[:s].encode("utf-8"))
-            yield t, p, p + l
+            yield t, p, p + token_len
 
 
 class SimpleFTS5Tokenizer(fts5.FTS5Tokenizer):
@@ -30,15 +28,15 @@ class SimpleFTS5Tokenizer(fts5.FTS5Tokenizer):
         for m in self._p.finditer(text):
             s, e = m.span()
             t = text[s:e]
-            l = len(t.encode("utf-8"))
+            token_len = len(t.encode("utf-8"))
             p = len(text[:s].encode("utf-8"))
-            yield t, p, p + l
+            yield t, p, p + token_len
 
 
 def test_createtable():
     c = apsw.Connection(":memory:")
     name = "simple"
-    sql = "CREATE VIRTUAL TABLE fts USING FTS4(tokenize={})".format(name)
+    sql = f"CREATE VIRTUAL TABLE fts USING FTS4(tokenize={name})"
     fts.register_tokenizer(c, name, fts.make_tokenizer_module(SimpleTokenizer()))
     c.cursor().execute(sql)
 
@@ -56,7 +54,7 @@ def test_insert():
     name = "simple"
     content = "これは日本語で書かれています"
     fts.register_tokenizer(c, name, fts.make_tokenizer_module(SimpleTokenizer()))
-    c.cursor().execute("CREATE VIRTUAL TABLE fts USING FTS4(tokenize={})".format(name))
+    c.cursor().execute(f"CREATE VIRTUAL TABLE fts USING FTS4(tokenize={name})")
     r = c.cursor().execute("INSERT INTO fts VALUES(?)", (content,))
     assert c.changes() == 1
     r = c.cursor().execute("SELECT content FROM fts").fetchone()
@@ -74,7 +72,7 @@ def test_match():
         ("あいうえお らりるれろ",),
     ]
     fts.register_tokenizer(c, name, fts.make_tokenizer_module(SimpleTokenizer()))
-    c.cursor().execute("CREATE VIRTUAL TABLE fts USING FTS4(tokenize={})".format(name))
+    c.cursor().execute(f"CREATE VIRTUAL TABLE fts USING FTS4(tokenize={name})")
     r = c.cursor().executemany("INSERT INTO fts VALUES(?)", contents)
     r = c.cursor().execute("SELECT * FROM fts").fetchall()
     assert len(r) == 4
@@ -117,7 +115,7 @@ furnished to do so, subject to the following conditions:""",
     ]
     with apsw.Connection(":memory:") as c:
         fts.register_tokenizer(c, name, fts.make_tokenizer_module(SimpleTokenizer()))
-        c.cursor().execute("CREATE VIRTUAL TABLE docs USING FTS4(title, body, tokenize={})".format(name))
+        c.cursor().execute(f"CREATE VIRTUAL TABLE docs USING FTS4(title, body, tokenize={name})")
         c.cursor().executemany("INSERT INTO docs(title, body) VALUES(?, ?)", docs)
         r = c.cursor().execute("SELECT * FROM docs WHERE docs MATCH 'Python'").fetchall()
         assert len(r) == 1
@@ -203,7 +201,7 @@ def test_tokenizer_output():
     name = "simple"
     with apsw.Connection(":memory:") as c:
         fts.register_tokenizer(c, name, fts.make_tokenizer_module(SimpleTokenizer()))
-        c.cursor().execute("CREATE VIRTUAL TABLE tok1 USING fts3tokenize({})".format(name))
+        c.cursor().execute(f"CREATE VIRTUAL TABLE tok1 USING fts3tokenize({name})")
         expect = [
             ("This", 0, 4, 0),
             ("is", 5, 7, 1),

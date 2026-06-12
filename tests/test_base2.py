@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import print_function
 
 import re
 import sqlite3
@@ -46,13 +44,13 @@ def db():
     conn = sqlite3.connect(":memory:")
 
     fts.register_tokenizer(conn, name, fts.make_tokenizer_module(BaseTokenizer()))
-    conn.execute("CREATE VIRTUAL TABLE fts USING FTS4(tokenize={})".format(name))
+    conn.execute(f"CREATE VIRTUAL TABLE fts USING FTS4(tokenize={name})")
 
     return conn
 
 
 def testZeroLengthToken(db):
-    result = db.executemany("INSERT INTO fts VALUES(?)", [("Make things I",), ("Some σ φχικλψ",)])
+    result = db.executemany("INSERT INTO fts VALUES(?)", [("Make things I",), ("Some σ φχικλψ",)])  # noqa: RUF001
     assert 2 == result.rowcount
 
 

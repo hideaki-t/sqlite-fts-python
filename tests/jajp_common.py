@@ -1,5 +1,3 @@
-# coding: utf-8
-from __future__ import print_function, unicode_literals
 
 import sqlite3
 
@@ -9,13 +7,13 @@ import sqlitefts as fts
 def test_createtable(name, t):
     c = sqlite3.connect(":memory:")
     c.row_factory = sqlite3.Row
-    sql = "CREATE VIRTUAL TABLE fts USING FTS4(tokenize={})".format(name)
+    sql = f"CREATE VIRTUAL TABLE fts USING FTS4(tokenize={name})"
     fts.register_tokenizer(c, name, fts.make_tokenizer_module(t))
     c.execute(sql)
     r = c.execute("SELECT * FROM sqlite_master WHERE type='table' AND name='fts'").fetchone()
     assert r
-    assert r[str("type")] == "table" and r[str("name")] == "fts" and r[str("tbl_name")] == "fts"
-    assert r[str("sql")].upper() == sql.upper()
+    assert r["type"] == "table" and r["name"] == "fts" and r["tbl_name"] == "fts"
+    assert r["sql"].upper() == sql.upper()
     c.close()
 
 
@@ -24,12 +22,12 @@ def test_insert(name, t):
     c.row_factory = sqlite3.Row
     content = "これは日本語で書かれています"
     fts.register_tokenizer(c, name, fts.make_tokenizer_module(t))
-    c.execute("CREATE VIRTUAL TABLE fts USING FTS4(tokenize={})".format(name))
+    c.execute(f"CREATE VIRTUAL TABLE fts USING FTS4(tokenize={name})")
     r = c.execute("INSERT INTO fts VALUES(?)", (content,))
     assert r.rowcount == 1
     r = c.execute("SELECT * FROM fts").fetchone()
     assert r
-    assert r[str("content")] == content
+    assert r["content"] == content
     c.close()
 
 
@@ -41,7 +39,7 @@ def test_match(name, t):
         (" これは　日本語の文章を 全文検索するテストです",),
     ]
     fts.register_tokenizer(c, name, fts.make_tokenizer_module(t))
-    c.execute("CREATE VIRTUAL TABLE fts USING FTS4(tokenize={})".format(name))
+    c.execute(f"CREATE VIRTUAL TABLE fts USING FTS4(tokenize={name})")
     r = c.executemany("INSERT INTO fts VALUES(?)", contents)
     assert r.rowcount == 2
     r = c.execute("SELECT * FROM fts").fetchall()
@@ -49,9 +47,9 @@ def test_match(name, t):
     r = c.execute("SELECT * FROM fts WHERE fts MATCH '日本語'").fetchall()
     assert len(r) == 2
     r = c.execute("SELECT * FROM fts WHERE fts MATCH 'ます'").fetchall()
-    assert len(r) == 1 and r[0][str("content")] == contents[0][0]
+    assert len(r) == 1 and r[0]["content"] == contents[0][0]
     r = c.execute("SELECT * FROM fts WHERE fts MATCH 'テスト'").fetchall()
-    assert len(r) == 1 and r[0][str("content")] == contents[1][0]
+    assert len(r) == 1 and r[0]["content"] == contents[1][0]
     r = c.execute("SELECT * FROM fts WHERE fts MATCH 'コレは'").fetchall()
     assert len(r) == 0
     c.close()
@@ -60,7 +58,7 @@ def test_match(name, t):
 def test_tokenizer_output(name, t):
     with sqlite3.connect(":memory:") as c:
         fts.register_tokenizer(c, name, fts.make_tokenizer_module(t))
-        c.execute("CREATE VIRTUAL TABLE tok1 USING fts3tokenize({})".format(name))
+        c.execute(f"CREATE VIRTUAL TABLE tok1 USING fts3tokenize({name})")
         expect = [
             ("This", 0, 4, 0),
             ("is", 5, 7, 1),

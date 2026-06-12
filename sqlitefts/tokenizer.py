@@ -1,4 +1,3 @@
-# coding: utf-8
 """
 a proof of concept implementation of SQLite FTS tokenizers in Python
 """
@@ -22,7 +21,7 @@ else:
 
     try:
         # try to use _sqlite3.so first
-        import _sqlite3  # noqa
+        import _sqlite3
 
         dll = ffi.dlopen(_sqlite3.__file__)
     except:
@@ -82,4 +81,4 @@ def get_db_from_connection(c):
     return db
 
 
-__all__ = ["get_db_from_connection", "SQLITE_OK", "SQLITE_DONE"]
+__all__ = ["SQLITE_DONE", "SQLITE_OK", "get_db_from_connection"]

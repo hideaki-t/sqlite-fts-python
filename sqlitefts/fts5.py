@@ -1,4 +1,3 @@
-# coding: utf-8
 """
 support library to write SQLite FTS5 tokenizer
 """
@@ -100,7 +99,7 @@ struct Fts5ExtensionApi {
 )
 
 
-class FTS5Tokenizer(object):
+class FTS5Tokenizer:
     """
     Tokenizer base class for FTS5.
     """
@@ -248,12 +247,12 @@ def make_fts5_tokenizer(tokenizer):
 
 
 __all__ = [
-    "register_tokenizer",
-    "make_fts5_tokenizer",
-    "FTS5Tokenizer",
-    "FTS5_TOKENIZE_QUERY",
-    "FTS5_TOKENIZE_PREFIX",
-    "FTS5_TOKENIZE_DOCUMENT",
     "FTS5_TOKENIZE_AUX",
+    "FTS5_TOKENIZE_DOCUMENT",
+    "FTS5_TOKENIZE_PREFIX",
+    "FTS5_TOKENIZE_QUERY",
     "FTS5_TOKEN_COLOCATED",
+    "FTS5Tokenizer",
+    "make_fts5_tokenizer",
+    "register_tokenizer",
 ]

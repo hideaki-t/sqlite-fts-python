@@ -1,5 +1,3 @@
-# coding: utf-8
-from __future__ import print_function
 
 import os
 import sys
@@ -40,11 +38,11 @@ class MeCabTokenizer(fts.Tokenizer):
         p = 0
         m = self.tagger.parseToNode(self.to_mecab(text))
         while m:
-            l = m.length
-            d = m.rlength - l
+            token_len = m.length
+            d = m.rlength - token_len
             start = p + d
-            p = start + l
-            if l:
+            p = start + token_len
+            if token_len:
                 yield self.from_mecab(m.surface), start, p
             m = m.next
 

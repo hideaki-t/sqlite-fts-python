@@ -1,4 +1,3 @@
-# coding: utf-8
 """
 support library to write SQLite FTS3 tokenizer
 """
@@ -42,7 +41,7 @@ struct sqlite3_tokenizer_cursor {
 )
 
 
-class Tokenizer(object):
+class Tokenizer:
     """
     Tokenizer base class.
     """

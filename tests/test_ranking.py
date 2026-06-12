@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
 
 import re
 import sqlite3
@@ -37,8 +35,8 @@ def db():
 
     fts.register_tokenizer(conn, name, fts.make_tokenizer_module(Tokenizer()))
 
-    conn.execute("CREATE VIRTUAL TABLE fts3 USING FTS3(tokenize={})".format(name))
-    conn.execute("CREATE VIRTUAL TABLE fts4 USING FTS4(tokenize={})".format(name))
+    conn.execute(f"CREATE VIRTUAL TABLE fts3 USING FTS3(tokenize={name})")
+    conn.execute(f"CREATE VIRTUAL TABLE fts4 USING FTS4(tokenize={name})")
 
     values = [
         ["Make thing I"],
@@ -52,7 +50,7 @@ def db():
         ["Pellentesque hendrerit nulla rutrum luctus rutrum. Fusce hendrerit fermentum nunc at posuere."],
     ]
     for n in ("fts3", "fts4"):
-        result = conn.executemany("INSERT INTO {0} VALUES(?)".format(n), values)
+        result = conn.executemany(f"INSERT INTO {n} VALUES(?)", values)
         assert result.rowcount == len(values)
 
     conn.create_function("bm25", 2, ranking.bm25)

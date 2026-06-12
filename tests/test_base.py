@@ -1,5 +1,3 @@
-# coding: utf-8
-from __future__ import print_function, unicode_literals
 
 import re
 import sqlite3
@@ -20,9 +18,9 @@ class SimpleTokenizer(fts.Tokenizer):
         for m in self._p.finditer(text):
             s, e = m.span()
             t = text[s:e].lower()
-            l = len(t.encode("utf-8"))
+            token_len = len(t.encode("utf-8"))
             p = len(text[:s].encode("utf-8"))
-            yield t, p, p + l
+            yield t, p, p + token_len
 
 
 @pytest.fixture
@@ -65,14 +63,14 @@ def test_register_tokenizer(c, tokenizer_module):
 
 def test_createtable(c, tokenizer_module):
     name = "simple"
-    sql = "CREATE VIRTUAL TABLE fts USING FTS4(tokenize={})".format(name)
+    sql = f"CREATE VIRTUAL TABLE fts USING FTS4(tokenize={name})"
     fts.register_tokenizer(c, name, tokenizer_module)
     c.execute(sql)
 
     r = c.execute("SELECT * FROM sqlite_master WHERE type='table' AND name='fts'").fetchone()
     assert r
-    assert r[str("type")] == "table" and r[str("name")] == "fts" and r[str("tbl_name")] == "fts"
-    assert r[str("sql")].upper() == sql.upper()
+    assert r["type"] == "table" and r["name"] == "fts" and r["tbl_name"] == "fts"
+    assert r["sql"].upper() == sql.upper()
     c.close()
 
 
@@ -80,12 +78,12 @@ def test_insert(c, tokenizer_module):
     name = "simple"
     content = "これは日本語で書かれています"
     fts.register_tokenizer(c, name, tokenizer_module)
-    c.execute("CREATE VIRTUAL TABLE fts USING FTS4(tokenize={})".format(name))
+    c.execute(f"CREATE VIRTUAL TABLE fts USING FTS4(tokenize={name})")
     r = c.execute("INSERT INTO fts VALUES(?)", (content,))
     assert r.rowcount == 1
     r = c.execute("SELECT * FROM fts").fetchone()
     assert r
-    assert r[str("content")] == content
+    assert r["content"] == content
     c.close()
 
 
@@ -98,7 +96,7 @@ def test_match(c, tokenizer_module):
         ("あいうえお らりるれろ",),
     ]
     fts.register_tokenizer(c, name, tokenizer_module)
-    c.execute("CREATE VIRTUAL TABLE fts USING FTS4(tokenize={})".format(name))
+    c.execute(f"CREATE VIRTUAL TABLE fts USING FTS4(tokenize={name})")
     r = c.executemany("INSERT INTO fts VALUES(?)", contents)
     assert r.rowcount == 4
     r = c.execute("SELECT * FROM fts").fetchall()
@@ -106,17 +104,17 @@ def test_match(c, tokenizer_module):
     r = c.execute("SELECT * FROM fts WHERE fts MATCH 'abc'").fetchall()
     assert len(r) == 2
     r = c.execute("SELECT * FROM fts WHERE fts MATCH 'def'").fetchall()
-    assert len(r) == 1 and r[0][str("content")] == contents[0][0]
+    assert len(r) == 1 and r[0]["content"] == contents[0][0]
     r = c.execute("SELECT * FROM fts WHERE fts MATCH 'xyz'").fetchall()
-    assert len(r) == 1 and r[0][str("content")] == contents[1][0]
+    assert len(r) == 1 and r[0]["content"] == contents[1][0]
     r = c.execute("SELECT * FROM fts WHERE fts MATCH 'zzz'").fetchall()
     assert len(r) == 0
     r = c.execute("SELECT * FROM fts WHERE fts MATCH 'あいうえお'").fetchall()
     assert len(r) == 2
     r = c.execute("SELECT * FROM fts WHERE fts MATCH 'かきくけこ'").fetchall()
-    assert len(r) == 1 and r[0][str("content")] == contents[2][0]
+    assert len(r) == 1 and r[0]["content"] == contents[2][0]
     r = c.execute("SELECT * FROM fts WHERE fts MATCH 'らりるれろ'").fetchall()
-    assert len(r) == 1 and r[0][str("content")] == contents[3][0]
+    assert len(r) == 1 and r[0]["content"] == contents[3][0]
     r = c.execute("SELECT * FROM fts WHERE fts MATCH 'まみむめも'").fetchall()
     assert len(r) == 0
     c.close()
@@ -142,7 +140,7 @@ furnished to do so, subject to the following conditions:""",
     ]
     with c:
         fts.register_tokenizer(c, name, tokenizer_module)
-        c.execute("CREATE VIRTUAL TABLE docs USING FTS4(title, body, tokenize={})".format(name))
+        c.execute(f"CREATE VIRTUAL TABLE docs USING FTS4(title, body, tokenize={name})")
         c.executemany("INSERT INTO docs(title, body) VALUES(?, ?)", docs)
         r = c.execute("SELECT * FROM docs WHERE docs MATCH 'Python'").fetchall()
         assert len(r) == 1
@@ -228,7 +226,7 @@ def test_tokenizer_output(c, tokenizer_module):
     name = "s"
     with sqlite3.connect(":memory:") as c:
         fts.register_tokenizer(c, name, tokenizer_module)
-        c.execute("CREATE VIRTUAL TABLE tok1 USING fts3tokenize({})".format(name))
+        c.execute(f"CREATE VIRTUAL TABLE tok1 USING fts3tokenize({name})")
         expect: list[tuple[str | None, int, int, int]] = [
             ("this", 0, 4, 0),
             ("is", 5, 7, 1),
@@ -297,7 +295,7 @@ furnished to do so, subject to the following conditions:""",
         c.execute("DROP TABLE docs_term")
         c.execute("DROP TABLE docs")
         fts.register_tokenizer(c, name, tokenizer_module)
-        c.execute("CREATE VIRTUAL TABLE docs USING FTS4(title, body, tokenize={})".format(name))
+        c.execute(f"CREATE VIRTUAL TABLE docs USING FTS4(title, body, tokenize={name})")
         c.executemany("INSERT INTO docs(title, body) VALUES(?, ?)", docs)
         c.execute("CREATE VIRTUAL TABLE docs_term USING FTS4AUX(docs)")
         terms = c.execute("SELECT * FROM docs_term").fetchall()

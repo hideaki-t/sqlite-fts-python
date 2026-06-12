@@ -64,4 +64,4 @@ def register_aux_function(con, name, f, ref_ctrl=True):
     return r
 
 
-__all__ = ["register_aux_function", "aux_tokenize"]
+__all__ = ["aux_tokenize", "register_aux_function"]

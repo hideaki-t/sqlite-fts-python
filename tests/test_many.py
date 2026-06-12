@@ -1,4 +1,3 @@
-from __future__ import print_function, unicode_literals
 
 import os
 import sqlite3
@@ -61,7 +60,7 @@ def create_table(c):
 
 def test_insert_many_each(conn, nr):
     with conn:
-        for i in range(nr):
+        for _ in range(nr):
             conn.execute("INSERT INTO fts VALUES(?)", [fake.address()])
             conn.execute("INSERT INTO fts5 VALUES(?)", [fake.address()])
     assert conn.execute("SELECT COUNT(*) FROM fts").fetchall()[0][0] == nr

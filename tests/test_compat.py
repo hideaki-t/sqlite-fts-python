@@ -1,8 +1,6 @@
-# coding: utf-8
 # test compatibility
 # - a tokneizer for FTS5 can be used for FTS3
 # - a tokneizer for FTS3 can be wrapped for FTS5
-from __future__ import print_function, unicode_literals
 
 import re
 
@@ -19,9 +17,9 @@ class SimpleFTS5Tokenizer(FTS5Tokenizer):
         for m in self._p.finditer(text):
             s, e = m.span()
             t = text[s:e]
-            l = len(t.encode("utf-8"))
+            token_len = len(t.encode("utf-8"))
             p = len(text[:s].encode("utf-8"))
-            yield t, p, p + l
+            yield t, p, p + token_len
 
 
 class SimpleFTS3Tokenizer(Tokenizer):
@@ -31,9 +29,9 @@ class SimpleFTS3Tokenizer(Tokenizer):
         for m in self._p.finditer(text):
             s, e = m.span()
             t = text[s:e]
-            l = len(t.encode("utf-8"))
+            token_len = len(t.encode("utf-8"))
             p = len(text[:s].encode("utf-8"))
-            yield t, p, p + l
+            yield t, p, p + token_len
 
 
 @pytest.fixture

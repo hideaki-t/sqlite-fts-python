@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Ranking code based on:
   https://github.com/coleifer/peewee/blob/master/playhouse/sqlite_ext.py
@@ -73,7 +72,7 @@ def bm25(raw_match_info, *args):
     else:
         weights = [0] * col_count
         for i, weight in enumerate(args):
-            weights[i] = args[i]
+            weights[i] = weight
 
     for i in range(term_count):
         for j in range(col_count):
@@ -107,4 +106,4 @@ def bm25(raw_match_info, *args):
     return -score
 
 
-__all__ = ["bm25", "simple", "rank"]
+__all__ = ["bm25", "rank", "simple"]
