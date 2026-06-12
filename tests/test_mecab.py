@@ -13,7 +13,7 @@ class MeCabTokenizer(fts.Tokenizer):
     def __init__(self):
         try:
             self.tagger = mecab.Tagger()
-        except:
+        except Exception:
             self.tagger = mecab.Tagger("".join(["-r", os.getenv("MECABRC", "/etc/mecabrc")]))
             self.tagger.parseToNode("")
 

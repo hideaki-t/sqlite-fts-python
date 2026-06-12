@@ -24,7 +24,7 @@ else:
         import _sqlite3
 
         dll = ffi.dlopen(_sqlite3.__file__)
-    except:
+    except (ImportError, AttributeError, OSError):
         dll = ffi.dlopen(find_library("sqlite3"))
 
 if sysconfig.get_config_var("Py_GIL_DISABLED") == 1:
