@@ -2,24 +2,20 @@
 name = "sqlitefts"
 version = "2.0.dev"
 description = "A Python binding for tokenizers of SQLite Full Text Search"
-authors = [{ name = "Hideaki Takahashi", email = "mymelo@gmail.com" }]
-dependencies = [
-    "cffi>=2.0.0; python_version >= '3.14'",
-    "cffi>=1.17.0 ; platform_python_implementation != 'PyPy'",
-]
 readme = "README.rst"
 requires-python = ">=3.10, <4"
 license = "MIT"
 license-files = ["LICENSE"]
+authors = [{ name = "Hideaki Takahashi", email = "mymelo@gmail.com" }]
 keywords = [
-  "SQLite",
-  "Full-text",
-  "search",
   "FTS",
-  "SQLite3",
   "FTS3",
   "FTS4",
   "FTS5",
+  "Full-text",
+  "SQLite",
+  "SQLite3",
+  "search",
 ]
 classifiers = [
   "Development Status :: 4 - Beta",
@@ -30,40 +26,35 @@ classifiers = [
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
   "Programming Language :: Python :: 3.14",
-  "Programming Language :: Python :: Implementation :: PyPy",
   "Programming Language :: Python :: Implementation :: CPython",
+  "Programming Language :: Python :: Implementation :: PyPy",
   "Topic :: Database",
   "Topic :: Software Development :: Libraries :: Python Modules",
+]
+dependencies = [
+  "cffi>=1.17.0 ; platform_python_implementation != 'PyPy'",
+  "cffi>=2.0.0; python_version >= '3.14'",
 ]
 
 [project.urls]
 Homepage = "https://github.com/hideaki-t/sqlite-fts-python/"
-Repository = "https://github.com/hideaki-t/sqlite-fts-python"
 Issues = "https://github.com/hideaki-t/sqlite-fts-python/issues"
-
-[build-system]
-requires = ["uv_build>=0.11.21,<0.12.0"]
-build-backend = "uv_build"
-
-[tool.uv.build-backend]
-module-name = "sqlitefts"
-module-root = ""
+Repository = "https://github.com/hideaki-t/sqlite-fts-python"
 
 [dependency-groups]
 dev = [
-    "mypy>=1.11.2 ; python_version >= '3.13'",
-    "faker>=30.0.0 ; python_full_version >= '3.13'",
-    "pytest>=8.3.2 ; python_version >= '3.13'",
-    "types-cffi>=1.16.0.0 ; python_version >= '3.13'",
-    "ruff>=0.6.2 ; python_version >= '3.13'",
-    "ty>=0.0.1a20 ; python_version >= '3.13'",
+  "faker>=30.0.0 ; python_full_version >= '3.13'",
+  "pyrefly>=1.0.0",
+  "pytest>=8.3.2 ; python_version >= '3.13'",
+  "ruff>=0.6.2 ; python_version >= '3.13'",
+  "ty>=0.0.1a20 ; python_version >= '3.13'",
+  "types-cffi>=1.16.0.0 ; python_version >= '3.13'",
+  "zuban>=0.8.2",
 ]
 
-[[tool.uv.index]]
-name = "testpypi"
-url = "https://test.pypi.org/simple/"
-publish-url = "https://test.pypi.org/legacy/"
-explicit = true
+[build-system]
+requires = ["uv_build>=0.11.21,<0.13.0"]
+build-backend = "uv_build"
 
 [tool.ruff]
 line-length = 120
@@ -74,8 +65,18 @@ select = ["E", "F", "W", "C", "B", "I", "UP", "RUF"]
 ignore = []
 fixable = ["ALL"]
 
+[tool.ruff.lint.isort]
+known-first-party = ["sqlitefts", "jajp_common"]
+
 [tool.ruff.format]
 line-ending = "lf"
 
-[tool.ruff.lint.isort]
-known-first-party = ["sqlitefts", "jajp_common"]
+[tool.uv.build-backend]
+module-name = "sqlitefts"
+module-root = ""
+
+[[tool.uv.index]]
+name = "testpypi"
+url = "https://test.pypi.org/simple/"
+publish-url = "https://test.pypi.org/legacy/"
+explicit = true
