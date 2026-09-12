@@ -1,5 +1,5 @@
 {
-  "baseBranches": [
+  "baseBranchPatterns": [
     "v2_0",
     "master"
   ]
