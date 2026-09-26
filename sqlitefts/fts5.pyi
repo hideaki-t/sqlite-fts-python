@@ -6,6 +6,9 @@ import apsw  # type: ignore
 
 from .fts3 import Tokenizer as FTS3Tokenizer
 
+ffi: Any
+dll: Any
+
 FTS5TokenizerHandle = Any
 FTS5_TOKENIZE_QUERY: int
 FTS5_TOKENIZE_PREFIX: int
@@ -21,6 +24,7 @@ class FTS3TokenizerAdaptor(FTS5Tokenizer):
     def __init__(self, fts3tokenizer: FTS3Tokenizer) -> None: ...
     def tokenize(self, text: str, flags: int = ...) -> Iterable[tuple[str, int, int]]: ...
 
+def fts5_api_from_db(c: Any) -> Any: ...
 def register_tokenizer(
     c: sqlite3.Connection | apsw.Connection,
     name: str,
@@ -29,5 +33,5 @@ def register_tokenizer(
     on_destroy: Callable[[Any], None] | None = ...,
 ) -> bool: ...
 def make_fts5_tokenizer(
-    tokenizer: FTS5Tokenizer | Callable[[], FTS5Tokenizer],
+    tokenizer: FTS5Tokenizer | type[FTS5Tokenizer] | Callable[..., FTS5Tokenizer],
 ) -> FTS5TokenizerHandle: ...

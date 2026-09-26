@@ -5,7 +5,7 @@ a proof of concept implementation of SQLite FTS tokenizers in Python
 import sys
 import sysconfig
 
-from cffi import FFI  # type: ignore
+from cffi import FFI
 
 SQLITE_OK = 0
 SQLITE_DONE = 101
@@ -13,7 +13,7 @@ SQLITE_DONE = 101
 ffi = FFI()
 
 if sys.platform == "win32":
-    import sqlite3  # noqa
+    import sqlite3  # ruff: ignore[unused-import]
 
     dll = ffi.dlopen("sqlite3.dll")
 else:
@@ -77,7 +77,7 @@ def get_db_from_connection(c):
         # pypy's SQLite3 connection has _db using cffi
         db = ffi.cast("sqlite3*", db)
     else:
-        db = ffi.cast("PyObject *", id(c)).db
+        db = ffi.cast("PyObject *", id(c)).db  # type: ignore
     return db
 
 

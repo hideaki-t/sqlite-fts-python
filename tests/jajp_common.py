@@ -1,92 +1,88 @@
-
 import sqlite3
 
 import sqlitefts as fts
 
 
-def test_createtable(name, t):
-    c = sqlite3.connect(":memory:")
-    c.row_factory = sqlite3.Row
-    sql = f"CREATE VIRTUAL TABLE fts USING FTS4(tokenize={name})"
-    fts.register_tokenizer(c, name, fts.make_tokenizer_module(t))
-    c.execute(sql)
-    r = c.execute("SELECT * FROM sqlite_master WHERE type='table' AND name='fts'").fetchone()
-    assert r
-    assert r["type"] == "table" and r["name"] == "fts" and r["tbl_name"] == "fts"
-    assert r["sql"].upper() == sql.upper()
-    c.close()
-
-
-def test_insert(name, t):
-    c = sqlite3.connect(":memory:")
-    c.row_factory = sqlite3.Row
-    content = "これは日本語で書かれています"
-    fts.register_tokenizer(c, name, fts.make_tokenizer_module(t))
-    c.execute(f"CREATE VIRTUAL TABLE fts USING FTS4(tokenize={name})")
-    r = c.execute("INSERT INTO fts VALUES(?)", (content,))
-    assert r.rowcount == 1
-    r = c.execute("SELECT * FROM fts").fetchone()
-    assert r
-    assert r["content"] == content
-    c.close()
-
-
-def test_match(name, t):
-    c = sqlite3.connect(":memory:")
-    c.row_factory = sqlite3.Row
-    contents = [
-        ("これは日本語で書かれています",),
-        (" これは　日本語の文章を 全文検索するテストです",),
-    ]
-    fts.register_tokenizer(c, name, fts.make_tokenizer_module(t))
-    c.execute(f"CREATE VIRTUAL TABLE fts USING FTS4(tokenize={name})")
-    r = c.executemany("INSERT INTO fts VALUES(?)", contents)
-    assert r.rowcount == 2
-    r = c.execute("SELECT * FROM fts").fetchall()
-    assert len(r) == 2
-    r = c.execute("SELECT * FROM fts WHERE fts MATCH '日本語'").fetchall()
-    assert len(r) == 2
-    r = c.execute("SELECT * FROM fts WHERE fts MATCH 'ます'").fetchall()
-    assert len(r) == 1 and r[0]["content"] == contents[0][0]
-    r = c.execute("SELECT * FROM fts WHERE fts MATCH 'テスト'").fetchall()
-    assert len(r) == 1 and r[0]["content"] == contents[1][0]
-    r = c.execute("SELECT * FROM fts WHERE fts MATCH 'コレは'").fetchall()
-    assert len(r) == 0
-    c.close()
-
-
-def test_tokenizer_output(name, t):
-    with sqlite3.connect(":memory:") as c:
+class BaseJaJpTest:
+    def test_createtable(self, name, t):
+        c = sqlite3.connect(":memory:")
+        c.row_factory = sqlite3.Row
+        sql = f"CREATE VIRTUAL TABLE fts USING FTS4(tokenize={name})"
         fts.register_tokenizer(c, name, fts.make_tokenizer_module(t))
-        c.execute(f"CREATE VIRTUAL TABLE tok1 USING fts3tokenize({name})")
-        expect = [
-            ("This", 0, 4, 0),
-            ("is", 5, 7, 1),
-            ("a", 8, 9, 2),
-            ("test", 10, 14, 3),
-            ("sentence", 15, 23, 4),
+        c.execute(sql)
+        r = c.execute("SELECT * FROM sqlite_master WHERE type='table' AND name='fts'").fetchone()
+        assert r
+        assert r["type"] == "table" and r["name"] == "fts" and r["tbl_name"] == "fts"
+        assert r["sql"].upper() == sql.upper()
+        c.close()
+
+    def test_insert(self, name, t):
+        c = sqlite3.connect(":memory:")
+        c.row_factory = sqlite3.Row
+        content = "これは日本語で書かれています"
+        fts.register_tokenizer(c, name, fts.make_tokenizer_module(t))
+        c.execute(f"CREATE VIRTUAL TABLE fts USING FTS4(tokenize={name})")
+        r = c.execute("INSERT INTO fts VALUES(?)", (content,))
+        assert r.rowcount == 1
+        r = c.execute("SELECT * FROM fts").fetchone()
+        assert r
+        assert r["content"] == content
+        c.close()
+
+    def test_match(self, name, t):
+        c = sqlite3.connect(":memory:")
+        c.row_factory = sqlite3.Row
+        contents = [
+            ("これは日本語で書かれています",),
+            (" これは　日本語の文章を 全文検索するテストです",),
         ]
-        for a, e in zip(
-            c.execute("SELECT token, start, end, position FROM tok1 WHERE input='This is a test sentence.'"),
-            expect,
-            strict=False,
-        ):
-            assert e == a
+        fts.register_tokenizer(c, name, fts.make_tokenizer_module(t))
+        c.execute(f"CREATE VIRTUAL TABLE fts USING FTS4(tokenize={name})")
+        r = c.executemany("INSERT INTO fts VALUES(?)", contents)
+        assert r.rowcount == 2
+        r = c.execute("SELECT * FROM fts").fetchall()
+        assert len(r) == 2
+        r = c.execute("SELECT * FROM fts WHERE fts MATCH '日本語'").fetchall()
+        assert len(r) == 2
+        r = c.execute("SELECT * FROM fts WHERE fts MATCH 'ます'").fetchall()
+        assert len(r) == 1 and r[0]["content"] == contents[0][0]
+        r = c.execute("SELECT * FROM fts WHERE fts MATCH 'テスト'").fetchall()
+        assert len(r) == 1 and r[0]["content"] == contents[1][0]
+        r = c.execute("SELECT * FROM fts WHERE fts MATCH 'コレは'").fetchall()
+        assert len(r) == 0
+        c.close()
 
-        s = "これ は テスト の 文 です"
-        expect = [(None, 0, 0, 0)]
-        for i, txt in enumerate(s.split()):
-            expect.append((txt, expect[-1][2], expect[-1][2] + len(txt.encode("utf-8")), i))
-        expect = expect[1:]
-        for a, e in zip(
-            c.execute(
-                "SELECT token, start, end, position FROM tok1 WHERE input=?",
-                [s.replace(" ", "")],
-            ),
-            expect,
-            strict=False,
-        ):
-            assert e == a
+    def test_tokenizer_output(self, name, t):
+        with sqlite3.connect(":memory:") as c:
+            fts.register_tokenizer(c, name, fts.make_tokenizer_module(t))
+            c.execute(f"CREATE VIRTUAL TABLE tok1 USING fts3tokenize({name})")
+            expect = [
+                ("This", 0, 4, 0),
+                ("is", 5, 7, 1),
+                ("a", 8, 9, 2),
+                ("test", 10, 14, 3),
+                ("sentence", 15, 23, 4),
+            ]
+            for a, e in zip(
+                c.execute("SELECT token, start, end, position FROM tok1 WHERE input='This is a test sentence.'"),
+                expect,
+                strict=False,
+            ):
+                assert e == a
 
-
-__all__ = [x for x in dir() if x.startswith("test_")]
+            s = "これ は テスト の 文 です"
+            pos = 0
+            expect = []
+            for i, txt in enumerate(s.split()):
+                end = pos + len(txt.encode("utf-8"))
+                expect.append((txt, pos, end, i))
+                pos = end
+            for a, e in zip(
+                c.execute(
+                    "SELECT token, start, end, position FROM tok1 WHERE input=?",
+                    [s.replace(" ", "")],
+                ),
+                expect,
+                strict=False,
+            ):
+                assert e == a

@@ -1,8 +1,7 @@
-
 import pytest
 
 import sqlitefts as fts
-from jajp_common import *  # noqa
+from tests.jajp_common import BaseJaJpTest
 
 janome = pytest.importorskip("janome.tokenizer")
 
@@ -20,11 +19,11 @@ class JanomeTokenizer(fts.Tokenizer):
             p += len(m.surface)
 
 
-@pytest.fixture
-def name():
-    return "janome"
+class TestJanome(BaseJaJpTest):
+    @pytest.fixture
+    def name(self):
+        return "janome"
 
-
-@pytest.fixture
-def t():
-    return JanomeTokenizer()
+    @pytest.fixture
+    def t(self):
+        return JanomeTokenizer()

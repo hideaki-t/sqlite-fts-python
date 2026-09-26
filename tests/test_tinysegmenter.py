@@ -1,8 +1,7 @@
-
 import pytest
 
 import sqlitefts as fts
-from jajp_common import *  # noqa
+from tests.jajp_common import BaseJaJpTest
 
 tinysegmenter = pytest.importorskip("tinysegmenter")
 ts = tinysegmenter.TinySegmenter()
@@ -23,11 +22,11 @@ class TinySegmenterTokenizer(fts.Tokenizer):
             p = np + lt
 
 
-@pytest.fixture
-def name():
-    return "tinysegmenter"
+class TestTinySegmenter(BaseJaJpTest):
+    @pytest.fixture
+    def name(self):
+        return "tinysegmenter"
 
-
-@pytest.fixture
-def t():
-    return TinySegmenterTokenizer()
+    @pytest.fixture
+    def t(self):
+        return TinySegmenterTokenizer()

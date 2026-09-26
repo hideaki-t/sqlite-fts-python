@@ -1,4 +1,3 @@
-
 import re
 from collections import Counter
 
@@ -13,7 +12,7 @@ ffi = FFI()
 class SimpleTokenizer(fts5.FTS5Tokenizer):
     _p = re.compile(r"\w+", re.UNICODE)
 
-    def tokenize(self, text, flags):
+    def tokenize(self, text, flags=None):
         for m in self._p.finditer(text):
             s, e = m.span()
             t = text[s:e]
@@ -84,7 +83,7 @@ def test_createtale_using_tokenizer_class(c):
 
     class ST(SimpleTokenizer):
         def __init__(self, context=None, args=None):
-            initialized[self] = (context, tuple(args))
+            initialized[self] = (context, tuple(args or ()))
 
         def on_delete(self):
             deleted[self] += 1
@@ -232,13 +231,13 @@ def test_flags(c):
     flags_counter = Counter()
 
     class ST(SimpleTokenizer):
-        def tokenize(self, text, flags):
+        def tokenize(self, text, flags=None):
             flags_counter[flags] += 1
             return super().tokenize(text, flags)
 
     name = "super_simple2"
     fts5.register_tokenizer(c, name, fts5.make_fts5_tokenizer(ST()))
-    sql = (f"CREATE VIRTUAL TABLE fts USING FTS5(content, tokenize='{name}')")
+    sql = f"CREATE VIRTUAL TABLE fts USING FTS5(content, tokenize='{name}')"
     c.execute(sql)
     c.executemany(
         "INSERT INTO fts VALUES(?)",

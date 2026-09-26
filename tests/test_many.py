@@ -1,16 +1,15 @@
-
 import os
 import sqlite3
 import tempfile
 
 import pytest
-from faker import Factory
+from faker import Faker
 
 import sqlitefts as fts
 from sqlitefts import fts5
 
 igo = pytest.importorskip("igo")
-fake = Factory.create("ja_JP")
+fake = Faker("ja_JP")
 
 
 class IgoTokenizer(fts.Tokenizer):

@@ -66,10 +66,13 @@ ignore = []
 fixable = ["ALL"]
 
 [tool.ruff.lint.isort]
-known-first-party = ["sqlitefts", "jajp_common"]
+known-first-party = ["sqlitefts", "tests"]
 
 [tool.ruff.format]
 line-ending = "lf"
+
+[tool.ty.src]
+exclude = ["test4.py", "testx.py"]
 
 [tool.uv.build-backend]
 module-name = "sqlitefts"

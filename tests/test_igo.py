@@ -1,12 +1,8 @@
-
-import sys
-
 import pytest
 
 import sqlitefts as fts
+from tests.jajp_common import BaseJaJpTest
 
-if sys.version_info < (3, 3) or sys.version_info >= (3, 4):
-    from jajp_common import *  # noqa
 igo = pytest.importorskip("igo")
 
 
@@ -20,11 +16,11 @@ class IgoTokenizer(fts.Tokenizer):
             yield m.surface, start, start + len(m.surface.encode("utf-8"))
 
 
-@pytest.fixture
-def name():
-    return "igo"
+class TestIgo(BaseJaJpTest):
+    @pytest.fixture
+    def name(self):
+        return "igo"
 
-
-@pytest.fixture
-def t():
-    return IgoTokenizer()
+    @pytest.fixture
+    def t(self):
+        return IgoTokenizer()

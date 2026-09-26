@@ -3,6 +3,9 @@ from typing import Any
 
 import apsw  # type: ignore
 
+ffi: Any
+dll: Any
+
 SQLITE3DBHandle = Any
 SQLITE_OK: int
 SQLITE_DONE: int

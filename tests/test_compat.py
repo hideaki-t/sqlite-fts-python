@@ -36,7 +36,7 @@ class SimpleFTS3Tokenizer(Tokenizer):
 
 @pytest.fixture
 def tokenizer_module():
-    return make_tokenizer_module(SimpleFTS5Tokenizer())
+    return make_tokenizer_module(SimpleFTS5Tokenizer())  # type: ignore
 
 
 @pytest.fixture

@@ -137,7 +137,7 @@ registred_fts5_tokenizers = {}
 def fts5_api_from_db(c):
     if not hasattr(c, "commit"):
         # APSW doesn't have conn.commit/rollback
-        import apsw
+        import apsw  # type: ignore
 
         if apsw.using_amalgamation:
             raise Error("unable to get fts5_api")

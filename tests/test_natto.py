@@ -1,9 +1,7 @@
-
-
 import pytest
 
 import sqlitefts as fts
-from jajp_common import *  # noqa
+from tests.jajp_common import BaseJaJpTest
 
 mecab = pytest.importorskip("natto")
 
@@ -21,11 +19,11 @@ class NattoPyTokenizer(fts.Tokenizer):
                     yield m.surface, start, p
 
 
-@pytest.fixture
-def name():
-    return "nattopy"
+class TestNatto(BaseJaJpTest):
+    @pytest.fixture
+    def name(self):
+        return "nattopy"
 
-
-@pytest.fixture
-def t():
-    return NattoPyTokenizer()
+    @pytest.fixture
+    def t(self):
+        return NattoPyTokenizer()

@@ -1,10 +1,9 @@
-
 import os
 
 import pytest
 
 import sqlitefts as fts
-from jajp_common import *  # noqa
+from tests.jajp_common import BaseJaJpTest
 
 mecab = pytest.importorskip("MeCab")
 
@@ -30,11 +29,11 @@ class MeCabTokenizer(fts.Tokenizer):
             m = m.next
 
 
-@pytest.fixture
-def name():
-    return "mecab"
+class TestMeCab(BaseJaJpTest):
+    @pytest.fixture
+    def name(self):
+        return "mecab"
 
-
-@pytest.fixture
-def t():
-    return MeCabTokenizer()
+    @pytest.fixture
+    def t(self):
+        return MeCabTokenizer()

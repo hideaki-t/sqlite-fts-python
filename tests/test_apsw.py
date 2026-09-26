@@ -1,4 +1,3 @@
-
 import re
 
 import pytest
@@ -24,7 +23,7 @@ class SimpleTokenizer(fts.Tokenizer):
 class SimpleFTS5Tokenizer(fts5.FTS5Tokenizer):
     _p = re.compile(r"\w+", re.UNICODE)
 
-    def tokenize(self, text, flags):
+    def tokenize(self, text, flags=None):
         for m in self._p.finditer(text):
             s, e = m.span()
             t = text[s:e]
@@ -41,7 +40,8 @@ def test_createtable():
     c.cursor().execute(sql)
 
     r = (
-        c.cursor()
+        c
+        .cursor()
         .execute("SELECT type, name, tbl_name, sql FROM sqlite_master WHERE type='table' AND name='fts'")
         .fetchone()
     )
@@ -201,10 +201,12 @@ def test_tokenizer_output():
             assert e == a
 
         s = "これ は テスト の 文 です"
-        expect = [(None, 0, -1, 0)]
+        pos = 0
+        expect = []
         for i, t in enumerate(s.split()):
-            expect.append((t, expect[-1][2] + 1, expect[-1][2] + 1 + len(t.encode("utf-8")), i))
-        expect = expect[1:]
+            end = pos + len(t.encode("utf-8"))
+            expect.append((t, pos, end, i))
+            pos = end + 1
         for a, e in zip(
             c.cursor().execute("SELECT token, start, end, position FROM tok1 WHERE input=?", [s]),
             expect,

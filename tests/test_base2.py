@@ -1,4 +1,3 @@
-
 import re
 import sqlite3
 
@@ -50,7 +49,7 @@ def db():
 
 
 def testZeroLengthToken(db):
-    result = db.executemany("INSERT INTO fts VALUES(?)", [("Make things I",), ("Some σ φχικλψ",)])  # noqa: RUF001
+    result = db.executemany("INSERT INTO fts VALUES(?)", [("Make things I",), ("Some σ φχικλψ",)])  # ruff: ignore[ambiguous-unicode-character-string]
     assert 2 == result.rowcount
 
 
