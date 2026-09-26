@@ -1,7 +1,7 @@
 import pytest
 
 import sqlitefts as fts
-from tests.jajp_common import BaseJaJpTest
+from jajp_common import BaseJaJpTest
 
 janome = pytest.importorskip("janome.tokenizer")
 

@@ -3,7 +3,7 @@ import os
 import pytest
 
 import sqlitefts as fts
-from tests.jajp_common import BaseJaJpTest
+from jajp_common import BaseJaJpTest
 
 mecab = pytest.importorskip("MeCab")
 

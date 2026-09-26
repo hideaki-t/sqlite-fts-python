@@ -56,6 +56,13 @@ dev = [
 requires = ["uv_build>=0.11.21,<0.13.0"]
 build-backend = "uv_build"
 
+[tool.pyrefly]
+search-path = [".", "tests"]
+project-excludes = ["test4.py", "testx.py"]
+
+[tool.pytest.ini_options]
+pythonpath = ["tests"]
+
 [tool.ruff]
 line-length = 120
 preview = true
@@ -66,13 +73,16 @@ ignore = []
 fixable = ["ALL"]
 
 [tool.ruff.lint.isort]
-known-first-party = ["sqlitefts", "tests"]
+known-first-party = ["sqlitefts", "jajp_common"]
 
 [tool.ruff.format]
 line-ending = "lf"
 
 [tool.ty.src]
 exclude = ["test4.py", "testx.py"]
+
+[tool.ty.environment]
+extra-paths = ["tests"]
 
 [tool.uv.build-backend]
 module-name = "sqlitefts"
@@ -83,3 +93,6 @@ name = "testpypi"
 url = "https://test.pypi.org/simple/"
 publish-url = "https://test.pypi.org/legacy/"
 explicit = true
+
+[tool.zuban]
+mypy_path = ["tests"]
