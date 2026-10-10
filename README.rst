@@ -63,7 +63,7 @@ FTS5::
 Requirements
 ============
 
- * Python 2.7, Python 3.9+, and PyPy2.7, PyPy3.10+ (older versions may work, but not tested)
+ * Python 3.11+ and PyPy3.10+ (older versions may work, but not tested)
 
    * sqlite3 has to be dynamically linked. see GH-37_
 

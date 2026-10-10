@@ -3,7 +3,7 @@ name = "sqlitefts"
 version = "2.0.dev"
 description = "A Python binding for tokenizers of SQLite Full Text Search"
 readme = "README.rst"
-requires-python = ">=3.10, <4"
+requires-python = ">=3.11, <4"
 license = "MIT"
 license-files = ["LICENSE"]
 authors = [{ name = "Hideaki Takahashi", email = "mymelo@gmail.com" }]
@@ -21,11 +21,11 @@ classifiers = [
   "Development Status :: 4 - Beta",
   "Intended Audience :: Developers",
   "Operating System :: OS Independent",
-  "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
   "Programming Language :: Python :: 3.14",
+  "Programming Language :: Python :: 3.15",
   "Programming Language :: Python :: Implementation :: CPython",
   "Programming Language :: Python :: Implementation :: PyPy",
   "Topic :: Database",
@@ -53,7 +53,7 @@ dev = [
 ]
 
 [build-system]
-requires = ["uv_build>=0.11.21,<0.13.0"]
+requires = ["uv_build>=0.11.21,<0.14.0"]
 build-backend = "uv_build"
 
 [tool.pyrefly]
